@@ -7,8 +7,8 @@ const int AK_INITIAL_WAIT_TIME = 180;
 const int AK_RUMBLE_TIME = 60;
 
 // First phase movement
-const int AK_PART_1_WAIT_TIME = 150;
-const int AK_PART_1_TOTAL_CIRCLE_TIME = 510;
+const int AK_PART_1_WAIT_TIME = 120;
+const int AK_PART_1_TOTAL_CIRCLE_TIME = 480;
 const int AK_PART_1_REDUCE_RADIUS_TIME = 300;
 const int AK_PART_1_EXPAND_RADIUS_TIME = 390;
 const int AK_PART_1_STEP = 1;
@@ -32,9 +32,11 @@ const int AK_ATTR_SFX_STOMP = 2;
 const int AK_ATTR_SFX_JUMP = 3;
 const int AK_ATTR_SFX_RUMBLE = 4;
 const int AK_ATTR_EXPLODE = 5;
+const int LEVEL2ARMOS = 6;
 
 ffc script ArmosKnights
 {
+
 	void run(int enemyID, int knightID, int numKnights, int rowX)
 	{
 		// The placed enemy is a dummy that acts as a supervisor;
@@ -331,7 +333,14 @@ ffc script ArmosKnights
 
 		// First stage - other knights still alive
 		endPart1=false;
-		angleStep=AK_PART_1_ROTATE_SPEED;
+		if(ghost->Attributes[LEVEL2ARMOS]==1)
+		{
+			angleStep=AK_PART_1_ROTATE_SPEED*3;
+		}
+		else
+		{
+			angleStep=AK_PART_1_ROTATE_SPEED;
+		}
 		radius=40;
 
 		while(true)
@@ -382,8 +391,16 @@ ffc script ArmosKnights
 			targetY=112;
 
 			// Moving 112-16=96 pixels, so wait exactly long enough for that
-			for(i=96/AK_PART_1_STEP; i>0 && !endPart1; i--)
-			endPart1=AKPart1Waitframe(this, ghost, targetX, targetY);
+			if(ghost->Attributes[LEVEL2ARMOS]==1)
+			{
+				for(i=96/AK_PART_1_STEP*3; i>0 && !endPart1; i--)
+				endPart1=AKPart1Waitframe(this, ghost, targetX, targetY);
+			}
+			else
+			{
+				for(i=96/AK_PART_1_STEP; i>0 && !endPart1; i--)
+				endPart1=AKPart1Waitframe(this, ghost, targetX, targetY);
+			}
 
 			if(endPart1)
 			break;
@@ -420,11 +437,23 @@ ffc script ArmosKnights
 			AKPart2Waitframe(this, ghost, targetX, targetY);
 
 			// Fall
-			while(Ghost_Z>0)
+			if(ghost->Attributes[LEVEL2ARMOS]==1)
+			{
+				while(Ghost_Z>0)
+			{
+				Ghost_Z-=AK_PART_2_FALL_STEP*2;
+				AKPart2Waitframe(this, ghost, targetX, targetY);
+			}
+			}
+			else
+			{
+				while(Ghost_Z>0)
 			{
 				Ghost_Z-=AK_PART_2_FALL_STEP;
 				AKPart2Waitframe(this, ghost, targetX, targetY);
 			}
+			}
+			
 
 			Game->PlaySound(ghost->Attributes[AK_ATTR_SFX_STOMP]);
 
@@ -438,7 +467,24 @@ ffc script ArmosKnights
 	// is the last knight and it's time to start the next phase.
 	bool AKPart1Waitframe(ffc this, npc ghost, float targetX, float targetY)
 	{
-		// Move toward where the knight's supposed to be
+		if(ghost->Attributes[LEVEL2ARMOS]==1)
+		{
+			// Move toward where the knight's supposed to be
+		if(Distance(Ghost_X, Ghost_Y, targetX, targetY)<3)
+		{
+			Ghost_X=targetX;
+			Ghost_Y=targetY;
+		}
+		else
+		{
+			float angle=ArcTan(targetX-Ghost_X, targetY-Ghost_Y)*57.2958;
+			Ghost_X+=3*Cos(angle);
+			Ghost_Y+=3*Sin(angle);
+		}
+		}
+		else
+		{
+			// Move toward where the knight's supposed to be
 		if(Distance(Ghost_X, Ghost_Y, targetX, targetY)<AK_PART_1_STEP)
 		{
 			Ghost_X=targetX;
@@ -449,6 +495,7 @@ ffc script ArmosKnights
 			float angle=ArcTan(targetX-Ghost_X, targetY-Ghost_Y)*57.2958;
 			Ghost_X+=AK_PART_1_STEP*Cos(angle);
 			Ghost_Y+=AK_PART_1_STEP*Sin(angle);
+		}
 		}
 
 		// If on the ground, jump and tell the supervisor to play the bounce sound

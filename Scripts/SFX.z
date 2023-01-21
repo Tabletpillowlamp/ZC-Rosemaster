@@ -13,6 +13,13 @@ ffc script playsfx{
 	}
 }
 
+ffc script stringScene{
+	void run (int s, int wait){
+		Waitframes(wait);
+		Screen->Message(s);
+	}
+}
+
 const int EQ_QUAKE_TIME = 60;
 
 ffc script Earthquake

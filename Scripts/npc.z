@@ -21,7 +21,18 @@ ffc script NPCScript{
 		int Combo = this->Data;
 		this->Data = CMB_NPC_HIDDEN;
 		//Waits until the NPC should appear and shows it
-		if(ItemCheck<0){
+		//If value is 300, NPC disappears when secrets are triggered.
+		if(ItemCheck==300){
+			if(!Screen->SecretsTriggered()){
+				this->Data = Combo;
+				if(Type==NPCBT_FACELINK){
+					this->Data = Combo + Arg1;
+				}
+			else{
+				Waitframe();
+			}}
+		}
+		else if(ItemCheck<0){
 			while(!Link->Item[Abs(ItemCheck)]){
 				Waitframe();
 			}
@@ -97,7 +108,7 @@ ffc script NPCScript{
 		while(true){
 			//Removes NPCs if Link has the required item
 			if(ItemCheck>0){
-				if(Link->Item[ItemCheck]){
+				if(Link->Item[ItemCheck] || (ItemCheck==300 && Screen->SecretsTriggered())){
 					this->Data = CMB_NPC_HIDDEN;
 					if(LAYER_NPC>-1&&NoSolid==0){
 						if(Type==NPCBT_GUARDH){

@@ -1814,8 +1814,17 @@ ffc script EZBoss{
 					EZB_Waitframes(this, ghost, vars, 24);
 				}
 				if(attack==65){ //Throw, Splash
-					EZB_FiringAnim(this, ghost, vars, 1);
+					EZB_FaceLink(this, ghost, vars);
+					EZB_FiringAnim(this, ghost, vars, 0);
+					angle = Angle(CenterX(ghost), CenterY(ghost), CenterLinkX(), CenterLinkY());
 					EZB_Waitframes(this, ghost, vars, 12);
+					
+					angle = Angle(CenterX(ghost), CenterY(ghost), CenterLinkX(), CenterLinkY());
+					e = EZB_Fire(this, ghost, vars, CenterX(ghost)-8, CenterY(ghost)-8, angle, 200, EWF_UNBLOCKABLE|EWF_SHADOW);
+					SetEWeaponMovement(e, EWM_THROW, -1, EWMF_DIE);
+					EZB_SetEWeaponDeathEffect(e);
+					
+					EZB_FiringAnim(this, ghost, vars, 1);
 					
 					angle = Angle(CenterX(ghost), CenterY(ghost), CenterLinkX(), CenterLinkY());
 					for(i=0; i<=18; ++i){
@@ -3205,6 +3214,189 @@ ffc script EZBoss{
 						EZB_Fire(this, ghost, vars, CenterX(ghost)-8, CenterY(ghost)-8, Angle(CenterX(ghost), CenterY(ghost), CenterLinkX(), CenterLinkY())+30*i, 200);
 					}
 					EZB_Waitframes(this, ghost, vars, 8);
+				}
+				if(attack==115){ //6 Aimed Shots (Quick)
+					EZB_FaceLink(this, ghost, vars);
+					EZB_FiringAnim(this, ghost, vars, 0);
+					for(i=0; i<6; ++i){
+						EZB_Fire(this, ghost, vars, CenterX(ghost)-8, CenterY(ghost)-8, Angle(CenterX(ghost), CenterY(ghost), CenterLinkX(), CenterLinkY()), 200);
+						EZB_Waitframes(this, ghost, vars, 8);
+					}
+				}
+				if(attack==116){ //Ammit Special 1
+					EZB_FaceLink(this, ghost, vars);
+					EZB_FiringAnim(this, ghost, vars, 0);
+					angle = Angle(CenterX(ghost), CenterY(ghost), CenterLinkX(), CenterLinkY());
+					EZB_Waitframes(this, ghost, vars, 12);
+					
+					angle = Angle(CenterX(ghost), CenterY(ghost), CenterLinkX(), CenterLinkY());
+					e = EZB_Fire(this, ghost, vars, CenterX(ghost)-8, CenterY(ghost)-8, angle, 300, EWF_UNBLOCKABLE|EWF_SHADOW);
+					i = CenterLinkX();
+					j = CenterLinkY();
+					SetEWeaponMovement(e, EWM_THROW, -1, EWMF_DIE);
+					EZB_SetEWeaponDeathEffect(e);
+					
+					EZB_Waitframes(this, ghost, vars, 24);
+					Game->PlaySound(56);
+					enem = CreateNPCAt(41, i, j);
+				}
+				if(attack==117){ //Ammit Special 2
+					EZB_FaceLink(this, ghost, vars);
+					EZB_FiringAnim(this, ghost, vars, 0);
+					angle = Angle(CenterX(ghost), CenterY(ghost), CenterLinkX(), CenterLinkY());
+					EZB_Waitframes(this, ghost, vars, 6);
+					
+					angle = Angle(CenterX(ghost), CenterY(ghost), CenterLinkX(), CenterLinkY());
+					e = EZB_Fire(this, ghost, vars, CenterX(ghost)-8, CenterY(ghost)-8, angle, 330, EWF_UNBLOCKABLE|EWF_SHADOW);
+					i = CenterLinkX();
+					j = CenterLinkY();
+					SetEWeaponMovement(e, EWM_THROW, -1, EWMF_DIE);
+					EZB_SetEWeaponDeathEffect(e);
+					
+					EZB_FaceLink(this, ghost, vars);
+					EZB_FiringAnim(this, ghost, vars, 0);
+					angle = Angle(CenterX(ghost), CenterY(ghost), CenterLinkX(), CenterLinkY());
+					EZB_Waitframes(this, ghost, vars, 6);
+					
+					angle = Angle(CenterX(ghost), CenterY(ghost), CenterLinkX(), CenterLinkY());
+					e = EZB_Fire(this, ghost, vars, CenterX(ghost)-8, CenterY(ghost)-8, angle, 330, EWF_UNBLOCKABLE|EWF_SHADOW);
+					i = CenterLinkX();
+					j = CenterLinkY();
+					SetEWeaponMovement(e, EWM_THROW, -1, EWMF_DIE);
+					EZB_SetEWeaponDeathEffect(e);
+					
+					EZB_FaceLink(this, ghost, vars);
+					EZB_FiringAnim(this, ghost, vars, 0);
+					angle = Angle(CenterX(ghost), CenterY(ghost), CenterLinkX(), CenterLinkY());
+					EZB_Waitframes(this, ghost, vars, 6);
+					
+					angle = Angle(CenterX(ghost), CenterY(ghost), CenterLinkX(), CenterLinkY());
+					e = EZB_Fire(this, ghost, vars, CenterX(ghost)-8, CenterY(ghost)-8, angle, 330, EWF_UNBLOCKABLE|EWF_SHADOW);
+					i = CenterLinkX();
+					j = CenterLinkY();
+					SetEWeaponMovement(e, EWM_THROW, -1, EWMF_DIE);
+					EZB_SetEWeaponDeathEffect(e);
+					
+					EZB_FaceLink(this, ghost, vars);
+					EZB_FiringAnim(this, ghost, vars, 0);
+					angle = Angle(CenterX(ghost), CenterY(ghost), CenterLinkX(), CenterLinkY());
+					EZB_Waitframes(this, ghost, vars, 6);
+					
+					angle = Angle(CenterX(ghost), CenterY(ghost), CenterLinkX(), CenterLinkY());
+					e = EZB_Fire(this, ghost, vars, CenterX(ghost)-8, CenterY(ghost)-8, angle, 330, EWF_UNBLOCKABLE|EWF_SHADOW);
+					i = CenterLinkX();
+					j = CenterLinkY();
+					SetEWeaponMovement(e, EWM_THROW, -1, EWMF_DIE);
+					EZB_SetEWeaponDeathEffect(e);
+					
+					EZB_Waitframes(this, ghost, vars, 24);
+					Game->PlaySound(56);
+					enem = CreateNPCAt(41, i, j);
+				}
+				if(attack==118){ //Leviathan Special
+					EZB_FaceLink(this, ghost, vars);
+					EZB_FiringAnim(this, ghost, vars, 1);
+					EZB_FaceLink(this, ghost, vars);
+					angle = Angle(CenterX(ghost), CenterY(ghost), CenterLinkX(), CenterLinkY());
+					Ghost_Data = combo;
+					for(i=0; i<80; ++i){
+						angle = Angle(CenterX(ghost), CenterY(ghost), CenterLinkX(), CenterLinkY());
+						Ghost_MoveAtAngle(angle, 1, 0);
+						EZB_FaceLink(this, ghost, vars);
+						EZB_Waitframe(this, ghost, vars);
+					}
+					angle = EZB_DirAngle(Ghost_Dir);
+					EZB_FiringAnim(this, ghost, vars, 1);
+					EZB_Waitframes(this, ghost, vars, 10);
+					Game->PlaySound(SFX_EZB_LIGHTNING);
+					EZB_RunEffect(3, CenterX(ghost), CenterY(ghost), angle, laserColors[0], laserColors[1], laserColors[2], ghost->WeaponDamage*2);
+					
+					EZB_Waitframes(this, ghost, vars, 40);
+				}
+				if(attack==119){//Meteors Level 2
+					EZB_FiringAnim(this, ghost, vars, 0);
+					Game->PlaySound(24);
+					EZB_Waitframes(this, ghost, vars, 40);
+					for(i=0; i<40; ++i){
+						e = EZB_Fire(this, ghost, vars, Rand(16, 224), Rand(16, 144), Rand(360), Rand(50), EWF_SHADOW);
+						SetEWeaponMovement(e, EWM_FALL, 176, EWMF_DIE);
+						SetEWeaponDeathEffect(e, EWD_EXPLODE, e->Damage);
+						EZB_Waitframes(this, ghost, vars, Rand(2, 6));
+					}
+					EZB_Waitframes(this, ghost, vars, 10);
+				}
+				if(attack==120){ //3 Aimed Shots (With Delays)
+					EZB_FaceLink(this, ghost, vars);
+					EZB_FiringAnim(this, ghost, vars, 0);
+					for(i=0; i<3; ++i){
+						EZB_FaceLink(this, ghost, vars);
+						EZB_Fire(this, ghost, vars, CenterX(ghost)-8, CenterY(ghost)-8, Angle(CenterX(ghost), CenterY(ghost), CenterLinkX(), CenterLinkY()), 200);
+						EZB_Waitframes(this, ghost, vars, 25);
+					}
+				}
+				
+				if(attack==121){ //Poe of Despair
+					EZB_FaceLink(this, ghost, vars);
+					EZB_FiringAnim(this, ghost, vars, 1);
+					EZB_FaceLink(this, ghost, vars);
+					angle = Angle(CenterX(ghost), CenterY(ghost), 120, 80);
+					Ghost_Data = combo;
+					while((CenterX(ghost) != 120) && (CenterY(ghost) != 80)){
+						angle = Angle(CenterX(ghost), CenterY(ghost), 120, 80);
+						Ghost_MoveAtAngle(angle, 1, 0);
+						EZB_FaceLink(this, ghost, vars);
+						EZB_Waitframe(this, ghost, vars);
+					}
+					for(i=0; i<35; ++i){
+								angle = Angle(CenterX(ghost), CenterY(ghost), CenterLinkX(), CenterLinkY());
+								EZB_DirAngle(Ghost_Dir);
+								EZB_Fire(this, ghost, vars, CenterX(ghost)-8, CenterY(ghost)-8, angle, 500);
+								EZB_Waitframes(this, ghost, 1, 6);
+					}
+					
+					EZB_Waitframes(this, ghost, vars, 40);
+				}
+				if(attack==122){ //Bullet Zip 2
+					EZB_Waitframes(this, ghost, vars, 3);
+					EZB_FiringAnim(this, ghost, vars, 1);
+					angle = 0;
+					if ( CenterLinkX() < 128 )
+						angle = 180;
+					for(i=0; i<15; ++i){
+						if ( angle == 0 )
+							EZB_Fire(this, ghost, vars, 0, CenterLinkY()-8, angle, 500);
+						else
+							EZB_Fire(this, ghost, vars, 240, CenterLinkY()-8, angle, 500);
+						EZB_Waitframes(this, ghost, vars, 16);
+					}
+				}
+				if(attack==123){ //Bullet Storm 2
+					EZB_FiringAnim(this, ghost, vars, 1);
+					angle = 0;
+					if ( CenterLinkX() < 128 )
+						angle = 180;
+					for(i=0; i<20; ++i){
+						if ( angle == 0 )
+							EZB_Fire(this, ghost, vars, 0, Rand(8, 152), angle, 400);
+						else
+							EZB_Fire(this, ghost, vars, 240, Rand(8, 152), angle, 400);
+						EZB_Waitframes(this, ghost, vars, 8);
+					}
+					EZB_Waitframes(this, ghost, vars, 24);
+				}
+				if(attack==124){ //Teleport, Lightning (4-Way) four times
+					EZB_Teleport(this, ghost, vars);
+					
+					EZB_Waitframes(this, ghost, vars, 12);
+					EZB_Waitframes(this, ghost, vars, 12);
+					for(i=0; i<4; ++i){
+						EZB_FaceAngle(this, ghost, vars, Angle(CenterX(ghost), CenterY(ghost), Link->X+8, Link->Y+8));
+						angle = EZB_DirAngle(Ghost_Dir);
+						EZB_FiringAnim(this, ghost, vars, 1);
+						Game->PlaySound(SFX_EZB_LIGHTNING);
+						EZB_RunEffect(3, CenterX(ghost), CenterY(ghost), angle, laserColors[0], laserColors[1], laserColors[2], ghost->WeaponDamage);
+					EZB_Waitframes(this, ghost, vars, 30);
+					}
 				}
 				
 				//new attack here

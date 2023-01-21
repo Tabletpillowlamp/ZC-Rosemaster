@@ -249,3 +249,92 @@ ffc script DirectionSwitch
 	    }
     }
 }
+
+item script CrossFlames{
+
+void run(int flamesprite, int speed, int damage, int soundeffect){
+
+Link->Action = LA_ATTACKING;
+        //The first flame.
+lweapon fireone = NextToLink(LW_FIRE,0);
+Game -> PlaySound (soundeffect);
+fireone->Dir = 0;
+fireone->Step = speed;
+fireone->UseSprite(flamesprite);
+fireone->Damage = damage;
+
+        //The second flame.
+lweapon firetwo = NextToLink(LW_FIRE,0);
+firetwo->Dir = 1;
+firetwo->Step = speed;
+firetwo->UseSprite(flamesprite);
+firetwo->Damage = damage;
+
+        //The third flame.
+lweapon firethree = NextToLink(LW_FIRE,0);
+firethree->Dir = 2;
+firethree->Step = speed;
+firethree->UseSprite(flamesprite);
+firethree->Damage = damage;
+
+        //The fourth flame.
+lweapon firefour = NextToLink(LW_FIRE,0);
+firefour->Dir = 3;
+firefour->Step = speed;
+firefour->UseSprite(flamesprite);
+firefour->Damage = damage;
+
+        //The above format for each flame can be imitated for more flames, or removed for fewer flames.
+Waitframes(60);
+}
+
+}
+
+item script Wand2{
+
+void run(int speed){
+
+Waitframes(16);
+        //The first flame.
+lweapon fireone = NextToLink(LW_FIRE,0);
+Game -> PlaySound (84);
+fireone->Dir = Link->Dir;
+fireone->Step = speed;
+fireone->UseSprite(12);
+fireone->Damage = 8;
+
+        //The second flame.
+lweapon firetwo = NextToLink(LW_FIRE,0);
+if(Link->Dir == 1){
+	firetwo->Dir = 6;
+	}
+else if(Link->Dir == 3){
+	firetwo->Dir = 5;
+	}
+else{
+	firetwo->Dir = 4;
+}
+firetwo->Step = speed;
+firetwo->UseSprite(12);
+firetwo->Damage = 8;
+
+        //The third flame.
+lweapon firethree = NextToLink(LW_FIRE,0);
+if(Link->Dir == 0){
+	firethree->Dir = 5;
+	}
+else if(Link->Dir == 2){
+	firethree->Dir = 6;
+	}
+else{
+	firethree->Dir = 7;
+}
+firethree->Step = speed;
+firethree->UseSprite(12);
+firethree->Damage = 8;
+
+        //The above format for each flame can be imitated for more flames, or removed for fewer flames.
+Waitframes(32);
+}
+
+}

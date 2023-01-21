@@ -19,3 +19,9 @@ void PushAnimation()
     }
     NoPush = false;
 }
+
+void ShieldSelection(){
+	if(Link->PressEx3){
+		Screen->Message(1);
+	}
+}

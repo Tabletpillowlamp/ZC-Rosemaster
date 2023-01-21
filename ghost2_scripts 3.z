@@ -1,0 +1,1415 @@
+namespace tempPatches
+{
+	const int BASE_LINK_Z = 0;
+}
+
+// ghost.zh
+// Version 2.8.0
+
+const int SCRIPT_BARRIERS = 7;
+const int BARRIER_A_RAISED           = 4656;
+const int BARRIER_B_RAISED           = 4657;
+const int BARRIER_A_LOWERED          = 4658;
+const int BARRIER_B_LOWERED          = 4659;
+const int BARRIER_A_ANIMRAISE        = 4660;
+const int BARRIER_B_ANIMRAISE        = 4661;
+const int BARRIER_A_ANIMLOWER        = 4662;
+const int BARRIER_B_ANIMLOWER        = 4663;
+const int BARRIER_A_WALKABLE         = 4664;
+const int BARRIER_B_WALKABLE         = 4665;
+const int BARRIER_A_SWITCH           = 4666;
+const int BARRIER_B_SWITCH           = 4667;
+const int BARRIER_SWITCH_DUMMY = 177; 
+const int BARRIER_SWITCH_DUMMY_HP = 32767;
+
+const int BIG_LINK                  = 0;   	
+
+// Pegasus Boots Constants
+const int CF_DASH                   = 102;                                                    
+const int INV_COMBO_ID 		    = 4669;	
+const int DashSFXLength        	    = 9;        
+const int SFX_DASH            	    = 79;       
+const int SFX_HITWALL        	    = 3;      
+const int SFX_PEGASUSBREAK    	    = 74;       
+const int T_DUST            	    = 660;    
+const int DustAFrames        	    = 4;        
+const int DustASpeed        	    = 4;        
+const int DustCSet            	    = 8;        
+const int I_ROCSFEATHER_INCREASER   = 124; 	
+const int DASH_SWORD_DMG            = 8;        
+const int DASH_SWORD_MULT           = 2;        
+const int SPRITE_SWORD1 	    = 0;        
+const int SPRITE_SWORD2 	    = 1;
+const int SPRITE_SWORD3 	    = 2;
+const int SPRITE_SWORD4 	    = 3;
+const int NPC_ITEMSET               = 178;     	
+const int SPRITE_BUSH_CUT           = 54;       
+const int SPRITE_FLOWER_CUT         = 54;       
+const int SPRITE_GRASS_CUT          = 54;
+const int CanDrown                  = 1;     
+
+bool barriers[511]; // false = blue barriers raised, true = red barriers raised
+// to draw while Scrolling
+int scrollDir;
+int scrollCounter;
+int drawX;
+int drawY;
+
+//Pegasus Boots Global variables
+int PegasusDash = -1;
+bool PegasusCollision;
+int DashCounter;
+int StoreInput;
+int StoreHP;
+
+int dashSwordTile = 0; // for drawing dashsword while scrolling, script sets these.
+int dashSwordCSet = 0; 
+
+                              //!!!!!!!!!!!!! this array size needs to be set, the number inside the []
+int Dust_Array[2];            // Array size should be max number of dust animations active at one time
+                              // Formula is ( (DustAFrames*DustASpeed) / 4 )
+
+//END Pegasus Boots global variables
+
+
+// Function that makes preparations for barriers on each screen and starts an FFC script
+void Barriers_NewScreen() 
+{
+	
+	// Search for a barrier-related combo
+	for (int i = 0; i <= 175; ++i) 
+	{
+		int cd = Screen->ComboD[i];
+		if (cd == BARRIER_A_RAISED || cd == BARRIER_A_LOWERED || cd == BARRIER_A_SWITCH ||
+			cd == BARRIER_B_RAISED || cd == BARRIER_B_LOWERED || cd == BARRIER_B_SWITCH) 
+		{
+			// A barrier-related combo was found
+			
+			// Make initial changes to combos
+			if (barriers[Game->GetCurDMap()]) 
+			{
+				for (int j = i; j <= 175; ++j)
+				{
+					int cd = Screen->ComboD[j];
+					if (cd == BARRIER_A_RAISED) Screen->ComboD[j] = BARRIER_A_LOWERED;
+					else if (cd == BARRIER_B_LOWERED) Screen->ComboD[j] = BARRIER_B_RAISED;
+					else if (cd == BARRIER_A_SWITCH) Screen->ComboD[j] = BARRIER_B_SWITCH;}}
+				else {
+					for (int j = i; j <= 175; j++) {
+						int cd = Screen->ComboD[j];
+						if (cd == BARRIER_B_RAISED) Screen->ComboD[j] = BARRIER_B_LOWERED;
+						else if (cd == BARRIER_A_LOWERED) Screen->ComboD[j] = BARRIER_A_RAISED;
+						else if (cd == BARRIER_B_SWITCH) Screen->ComboD[j] = BARRIER_A_SWITCH;}}
+					
+					// So run FFCscript to control barriers
+					int args[] = {0,0,0,0,0,0,0,0};
+					RunFFCScript(SCRIPT_BARRIERS, args);
+					break;}
+			}}
+			
+			// This lets you toggle barriers on any dmap
+			bool ToggleBarriers(int dmap) {
+				if (dmap == Game->GetCurDMap()) ToggleBarriers();
+				else barriers[dmap] = !barriers[dmap];
+				return barriers[dmap];}
+			
+			// This toggles barriers on the current dmap
+			bool ToggleBarriers() {
+				
+				int curdmap = Game->GetCurDMap();
+				if (!barriers[curdmap]) {
+					barriers[curdmap] = true;
+					for (int i = 0; i <= 175; i++) {
+						int cd = Screen->ComboD[i];
+						if (cd == BARRIER_A_RAISED || cd == BARRIER_A_WALKABLE || cd == BARRIER_A_ANIMRAISE) {
+							Screen->ComboD[i] = BARRIER_A_ANIMLOWER;}
+						else if (cd == BARRIER_B_LOWERED || cd == BARRIER_B_ANIMLOWER) {
+							Screen->ComboD[i] = BARRIER_B_ANIMRAISE;}
+						else if (cd == BARRIER_A_SWITCH) {Screen->ComboD[i] = BARRIER_B_SWITCH;}}}
+						else {
+							barriers[curdmap] = false;
+							for (int i = 0; i <= 175; i++) {
+								int cd = Screen->ComboD[i];
+								if (cd == BARRIER_B_RAISED || cd == BARRIER_B_WALKABLE || cd == BARRIER_B_ANIMRAISE) {
+									Screen->ComboD[i] = BARRIER_B_ANIMLOWER;}
+								else if (cd == BARRIER_A_LOWERED || cd == BARRIER_A_ANIMLOWER) {
+									Screen->ComboD[i] = BARRIER_A_ANIMRAISE;}
+								else if (cd == BARRIER_B_SWITCH) {Screen->ComboD[i] = BARRIER_A_SWITCH;}}}
+								
+								return barriers[curdmap];
+							}
+							
+							ffc script Barriers {
+								void run() {
+									
+									// Initialize storage for bswitch hit dummies
+									int bswitch_count;
+									npc bswitch[8];
+									
+									for (int i = 0; i <= 175; i++) {
+										if (Screen->ComboD[i] == BARRIER_A_SWITCH || Screen->ComboD[i] == BARRIER_B_SWITCH) {
+											npc bs = CreateNPCAt(BARRIER_SWITCH_DUMMY, ComboX(i), ComboY(i));
+											bs->HitWidth = 8; // Smaller hit box to avoid annoying collisions with Link
+											bs->HitHeight = 8;
+											bs->HP = BARRIER_SWITCH_DUMMY_HP;
+											bswitch[bswitch_count++] = bs;}}
+										
+										// Change raised barriers to walkable ones if Link enters screen on a raised barrier
+										int lcombo = LinkOnComboD();
+										bool onbarrier = (lcombo == BARRIER_A_RAISED || lcombo == BARRIER_B_RAISED);
+										if (onbarrier) for (int i = 0; i < 176; i++) {
+											if (Screen->ComboD[i] == BARRIER_A_RAISED) {Screen->ComboD[i] = BARRIER_A_WALKABLE;}
+											else if (Screen->ComboD[i] == BARRIER_B_RAISED) {Screen->ComboD[i] = BARRIER_B_WALKABLE;}}
+											
+											while (true) {
+												
+												// Detect hits on bswitches, and change combos accordingly
+												for (int j = 0; j < bswitch_count; j++) {
+													if (bswitch[j]->HP < BARRIER_SWITCH_DUMMY_HP) {
+														bswitch[j]->HP = BARRIER_SWITCH_DUMMY_HP;
+														ToggleBarriers();
+														break;}} //break so that only one bswitch hit may register per frame
+													
+													
+													// Make barriers walkable if Link is on raised barriers, or unwalkable if not
+													lcombo = LinkOnComboD();
+													if (!onbarrier && (lcombo == BARRIER_A_RAISED || lcombo == BARRIER_B_RAISED)) {
+														onbarrier = true;
+														for (int i = 0; i <= 175; i++) {
+															if (Screen->ComboD[i] == BARRIER_A_RAISED) {Screen->ComboD[i] = BARRIER_A_WALKABLE;}
+															else if (Screen->ComboD[i] == BARRIER_B_RAISED) {Screen->ComboD[i] = BARRIER_B_WALKABLE;}}}
+															else if (onbarrier && !(lcombo == BARRIER_A_WALKABLE || lcombo == BARRIER_B_WALKABLE)) {
+																onbarrier = false;
+																for (int i = 0; i <= 175; i++) {
+																	if (Screen->ComboD[i] == BARRIER_A_WALKABLE) {Screen->ComboD[i] = BARRIER_A_RAISED;}
+																	else if (Screen->ComboD[i] == BARRIER_B_WALKABLE) {Screen->ComboD[i] = BARRIER_B_RAISED;}}}
+																	
+																	Waitframe();}
+																
+																
+															}}
+															
+															
+															
+															item script PegasusBoots{
+																void run(){
+																	
+																	if(ComboFI(Link->X+8,Link->Y + Cond(BIG_LINK==0, 12, 8),CF_DASH)) Quit();  // can't dash on non-solid dash combos
+																	
+																	if(CanDrown == 0 && IsWater(TouchedComboLoc()) ) Quit();  // stop beside non-drownable water
+																	
+																	if(Link->Action == LA_SWIMMING || Link->Action == LA_DROWNING) Quit();  // can't use dash when in water
+																	
+																	if(IsJumping()) Quit();  // can't initiate dash while jumping
+																	
+																	// Link won't dash if facing up or down in sideview 
+																	if(IsSideview()){
+																		if(Link->Dir == DIR_UP || Link->Dir == DIR_DOWN) Quit();
+																	}
+																	
+																	PegasusDash = Link->Dir;
+																	
+																	if(Link->InputB && !Link->InputA) StoreInput = 2;
+																	else if(Link->InputA && !Link->InputB) StoreInput = 1;
+																	
+																}
+															}
+															
+															
+															// Stops dashing, no collision.  Easy for other scripts to call.
+															void StopDash(){
+																PegasusDash = -1;
+																DashCounter = 0;
+															}
+															
+															
+															// takes care of all the PegasusBoots functions
+															// call it in your global while loop, above the waitdraw and waitframe.
+															void PegasusBoots(){
+																lweapon mysword;
+																
+																int loc = ComboAt(Link->X+8,Link->Y + Cond(BIG_LINK==0, 12, 8));
+																
+																// this fixes the bug that makes Link dive immediately after dashing into water with flippers
+																if(DashCounter < 0){
+																	DashCounter++;
+																	
+																	if(Link->Action == LA_SWIMMING){
+																		Link->InputA = false;
+																	}else if(Link->Action == LA_DIVING){
+																	Link->Action == LA_SWIMMING;
+																	Link->InputA = false;
+																}else{
+																DashCounter = 0;
+															}
+														}
+														
+														// fixs a bug with drownable water and diagonal movement off
+														if(CanDrown == 1 && IsWater(loc) 
+														&& Link->Action != LA_SWIMMING && Link->Action != LA_DROWNING && Link->Action != LA_DIVING){
+															
+															if(Link->Dir == DIR_UP) Link->InputUp = true;
+															else if(Link->Dir == DIR_DOWN) Link->InputDown = true;
+															else if(Link->Dir == DIR_LEFT) Link->InputLeft = true;
+															else if(Link->Dir == DIR_RIGHT) Link->InputRight = true;
+														}
+														
+														
+														if(PegasusDash >= 0){
+															if(!PegasusCollision){
+																if( (Link->Action != LA_SCROLLING && ((StoreInput == 1 && !Link->InputA) || (StoreInput == 2 && !Link->InputB)))
+																|| StoreHP > Link->HP || Link->Action == LA_RAFTING
+																|| Link->Action == LA_DROWNING || Link->Action == LA_SWIMMING || Link->Action == LA_DIVING
+																|| (CanDrown == 0 && IsWater(TouchedComboLoc())) || (CanDrown == 1 && IsWater(loc)) ){
+																	
+																	StopDash();
+																	
+																	if(Link->Action == LA_SWIMMING) DashCounter = -20;
+																}
+																
+																if(!UsingItem(I_ROCSFEATHER_INCREASER))
+																NoAction();
+																
+																if(Link->Item[I_ROCSFEATHER] && !Link->Item[I_ROCSFEATHER_INCREASER]){
+																	Link->Item[I_ROCSFEATHER_INCREASER]=true;
+																}
+																
+																// Link runs on spot for 10 frames before dash happens
+																if(Link->Action != LA_SCROLLING && DashCounter > 10){
+																	if(PegasusDash == DIR_UP && DashCheck(Link->X+8,Link->Y+6,true) != 2){
+																		Link->Y--;
+																		drawY--;
+																		if(Link->Item[126]){
+																			Link->Y--;
+																			drawY--;
+																			Link->Y--;
+																			drawY--;
+																		}
+																		Link->InputUp = true;
+																	}
+																	else if(PegasusDash == DIR_DOWN && DashCheck(Link->X+8,Link->Y+17,true) != 2){
+																		Link->Y++;
+																		drawY++;
+																		if(Link->Item[126]){
+																			Link->Y++;
+																			drawY++;
+																			Link->Y++;
+																			drawY++;
+																		}
+																		Link->InputDown = true;
+																	}
+																	else if(PegasusDash == DIR_LEFT && DashCheck(Link->X,Link->Y+12,false) != 2){
+																		Link->X--;
+																		drawX--;
+																		if(Link->Item[126]){
+																			Link->X--;
+																			drawX--;
+																			Link->X--;
+																			drawX--;
+																		}
+																		Link->InputLeft = true;
+																	}
+																	else if(PegasusDash == DIR_RIGHT && DashCheck(Link->X+16,Link->Y+12,false) != 2){
+																		Link->X++;
+																		drawX++;
+																		if(Link->Item[126]){
+																			Link->X++;
+																			drawX++;
+																			Link->X++;
+																			drawX++;
+																		}
+																		Link->InputRight = true;
+																	}
+																	else{
+																		PegasusCollision = true;
+																		DashCounter = 0;
+																	}
+																}//end DashCounter if
+																
+																// do stuff if not jumping
+																if( !IsJumping() ){
+																	
+																	// handles breaking of solid Pegasus combos
+																	if(ComboFI(loc,CF_DASH) && Screen->ComboS[loc] == 1111b){
+																		Screen->ComboD[loc]=INV_COMBO_ID;
+																		if(Screen->ComboF[loc] == CF_DASH) Screen->ComboF[loc] = 0;
+																		Game->PlaySound(SFX_PEGASUSBREAK);
+																	}
+																	
+																	DustDrawTile();  // use new dust draw code that works while scrolling
+																	// DustDrawLW(); // use old dust draw code that doesn't work while scrolling (quest rule "no screen scrolling" on)
+																	
+																	if(DashCounter%DashSFXLength == 0) Game->PlaySound(SFX_DASH);
+																} 
+																
+																
+																// draws dashSword when scrolling
+																if(Link->Action == LA_SCROLLING && dashSwordTile > 0)
+																{
+																	
+																	if(PegasusDash == DIR_UP)
+																	Screen->DrawTile(0,drawX+InFrontX(DIR_UP,6),drawY+InFrontY(DIR_UP,6),
+																	dashSwordTile,1,1,dashSwordCSet,-1,-1,0,0,0,0,true,128);
+																	else if(PegasusDash == DIR_DOWN)
+																	Screen->DrawTile(0,drawX+InFrontX(DIR_DOWN,6),drawY+InFrontY(DIR_DOWN,6),
+																	dashSwordTile,1,1,dashSwordCSet,-1,-1,0,0,0,3,true,128);
+																	else if(PegasusDash == DIR_LEFT)
+																	Screen->DrawTile(0,drawX+InFrontX(DIR_LEFT,6),drawY+InFrontY(DIR_LEFT,6)+3,
+																	dashSwordTile,1,1,dashSwordCSet,-1,-1,0,0,0,1,true,128);
+																	else if(PegasusDash == DIR_RIGHT)
+																	Screen->DrawTile(0,drawX+InFrontX(DIR_RIGHT,6),drawY+InFrontY(DIR_RIGHT,6)+3,
+																	dashSwordTile,1,1,dashSwordCSet,-1,-1,0,0,0,0,true,128);
+																}
+																
+																int swordEquip = LinkSwordEquip();
+																
+																if(swordEquip > -1 && DashCounter>10)
+																{
+																	// draws dashSword when not scrolling
+																	
+																	mysword = LoadLWeaponOf(LW_SCRIPT3);
+																	if(!mysword->isValid()) mysword = Screen->CreateLWeapon(LW_SCRIPT3);
+																	
+																	if(swordEquip==I_SWORD4)
+																	{
+																		mysword->UseSprite(SPRITE_SWORD4);
+																	}
+																	else if(swordEquip==I_SWORD3)
+																	{
+																		mysword->UseSprite(SPRITE_SWORD3);
+																	}
+																	else if(swordEquip==I_SWORD2)
+																	{
+																		mysword->UseSprite(SPRITE_SWORD2);
+																	}
+																	else if(swordEquip==193) //Draconic Blade
+																	{
+																		mysword->UseSprite(125);
+																	}
+																	else if(swordEquip==127) //Bahamut's Blade
+																	{
+																		mysword->UseSprite(152);
+																	}
+																	else
+																	{
+																		mysword->UseSprite(SPRITE_SWORD1);
+																	}//end sprite if
+														
+																	if(DASH_SWORD_MULT > 0)
+																	{
+																		itemdata itm = Game->LoadItemData(swordEquip);
+																		mysword->Damage = itm->Power * DASH_SWORD_MULT;
+																	}
+																	else mysword->Damage = DASH_SWORD_DMG;
+														
+																	mysword->X = Link->X+InFrontX(PegasusDash, 6);
+																	mysword->Y = Link->Y+InFrontY(PegasusDash, 6);
+																	
+																	mysword->Dir = PegasusDash;
+																	if(mysword->Dir < 2)
+																	{ //dir is up or down
+																		if(mysword->Dir == DIR_DOWN) mysword->Flip = 3;
+																	}
+																	else
+																	{ //dir is left or right
+																		mysword->OriginalTile += 1;
+																		mysword->Tile = mysword->OriginalTile;
+																		if(mysword->Dir == DIR_LEFT) mysword->Flip = 1;
+																		mysword->Y += 3;
+																	}//end dir if
+														
+																	// save our sword sprite for when scrolling
+																	dashSwordTile = mysword->Tile;
+																	dashSwordCSet = mysword->OriginalCSet;
+														
+																	// slash stuff while dashing with sword
+																	DoDashSlash(ComboAt(TouchedX()+InFrontX(mysword->Dir,4),TouchedY()+InFrontY(mysword->Dir,4)));
+																}
+																else
+																{ // we don't have dashSword
+														
+																	mysword = LoadLWeaponOf(LW_SCRIPT3);
+																	Remove(mysword);
+														
+																	dashSwordTile = 0;
+																	dashSwordCSet = 0;
+																}//end mysword if
+													
+															}//end !PegasusCollision if
+												
+															else
+															{ //is PegasusCollision, DashCounter has been reset to 0.
+																NoAction();
+													
+																// knockback code
+																if(PegasusDash == DIR_UP && DashCheck(Link->X+8,Link->Y+18,true) == 0) Link->Y++;
+																else if(PegasusDash == DIR_DOWN && DashCheck(Link->X+8,Link->Y+6,true) == 0) Link->Y--;
+																else if(PegasusDash == DIR_LEFT && DashCheck(Link->X+18,Link->Y+8,false) == 0) Link->X++;
+																else if(PegasusDash == DIR_RIGHT && DashCheck(Link->X-2,Link->Y+8,false) == 0) Link->X--;
+													
+																if(DashCounter == 1)
+																{
+																	Screen->ClearSprites(SL_LWPNS);
+																	Game->PlaySound(SFX_HITWALL);
+																	Screen->Quake = 10;
+																}
+																else if(DashCounter == 10)
+																{
+																	StopDash();
+																	PegasusCollision = false;
+																}
+													
+																if(DashCounter < 5) Link->Z++;
+															}// end PegasusCollision if/else
+												
+															DashCounter++; 
+														}// end PegasusDash if
+											
+														else
+														{ // !PegasusDash
+															mysword = LoadLWeaponOf(LW_SCRIPT3);
+															Remove(mysword);
+												
+															dashSwordTile = 0;
+															dashSwordCSet = 0;
+												
+															if(Link->Item[I_ROCSFEATHER_INCREASER]) Link->Item[I_ROCSFEATHER_INCREASER]=false;
+														}//end PegasusDash if/else
+											
+														StoreHP = Link->HP;
+													}//end function
+										
+										
+													// next two functions draw dust when dashing.  first one allows drawing during scrolling. the second is the old code, and currently unused.
+													void DustDrawTile()
+													{
+														if(PegasusDash < 0) return;
+											
+														int dX;
+														int dY;
+											
+														if(DashCounter%4 == 0)
+														{
+															for(int i = 0; i < SizeOfArray(Dust_Array); i++)
+															{
+																if(Dust_Array[i] == 0)
+																
+																{
+																	Dust_Array[i] = 1;
+																	break;   
+																}
+															}
+														}
+											
+														for(int i = 0; i < SizeOfArray(Dust_Array); i++)
+														{
+															if(Dust_Array[i]==0) continue;
+												
+															if(PegasusDash == DIR_UP)
+															{                        
+																dX = drawX;
+																if(Dust_Array[i] < 4) dY = drawY+8;
+																else dY = drawY+8+3+(Dust_Array[i]-1);
+													
+															}
+															else if(PegasusDash == DIR_DOWN)
+															{
+																dX = drawX;
+												
+																if(Dust_Array[i] < 4) dY = drawY;
+																else dY = drawY-3-(Dust_Array[i]-1);
+												
+															}
+															else if(PegasusDash == DIR_LEFT)
+															{
+											
+																if(Dust_Array[i] < 4) dX = drawX;
+																else dX = drawX+3+(Dust_Array[i]-1);
+											
+																dY = drawY+8;
+											
+															}
+															else if(PegasusDash == DIR_RIGHT)
+															{
+										
+																if(Dust_Array[i] < 4) dX = drawX;
+																else dX = drawX-3-(Dust_Array[i]-1);
+										
+																dY = drawY+8;
+															}
+									
+															Screen->FastTile(1, dX, dY, T_DUST+ Floor(Dust_Array[i]/DustASpeed), DustCSet, 128);
+									
+															if(Dust_Array[i] == DustAFrames*DustASpeed) Dust_Array[i] = 0;
+															else Dust_Array[i]++;
+														}
+													}
+							
+													void DustDrawLW()
+													{
+
+														if(PegasusDash < 0) return;
+								
+														lweapon Dust;
+														if(DashCounter%4 == 0)
+														{
+															for(int j=1;j<=Screen->NumLWeapons();j++)
+															{
+																Dust = Screen->LoadLWeapon(j);
+																if(Dust->ID != LW_SCRIPT10) continue;
+																if(PegasusDash < 1) Dust->Y-=3;
+																else if(PegasusDash < 2) Dust->Y+=3;
+																else if(PegasusDash < 3) Dust->X-=3;
+																else if(PegasusDash < 4) Dust->X+=3;
+															}//end for loop
+									
+															Dust = Screen->CreateLWeapon(LW_SCRIPT10);
+															Dust->OriginalTile = T_DUST;
+															Dust->CSet = DustCSet;
+															Dust->Y = Link->Y+8;
+															Dust->X = Link->X;
+															Dust->NumFrames = DustAFrames;
+															Dust->ASpeed = DustASpeed;
+															Dust->DeadState = DustAFrames*DustASpeed;
+														}//end dust if
+													}
+							
+							
+													// Check whether Link can dash onto a combo
+													int DashCheck(int x, int y, bool xy)
+													{
+														int xoffset; int yoffset;
+														bool Solid;
+								
+														if(xy) xoffset = 4;
+														else yoffset = 3;
+								
+														if(Screen->isSolid(x-xoffset,y-yoffset) || Screen->isSolid(x+xoffset,y+yoffset)) Solid = true;
+								
+														if(Solid && CanDashSlash(x,y) ) Solid = false;
+								
+														//Not solid and not a Dash combo return 0
+														if(!Solid && !ComboFI(x-xoffset,y-yoffset,CF_DASH) && !ComboFI(x+xoffset,y+yoffset,CF_DASH)) return 0;
+								
+														//Is solid and is a Dash combo return 1
+														else if(Solid && (ComboFI(x-xoffset,y-yoffset,CF_DASH) || ComboFI(x+xoffset,y+yoffset,CF_DASH))) return 1;
+								
+														//Is either solid without a Dash combo, or not solid with a Dash combo
+														else return 2;
+													}
+							
+							
+													//fixes a bug where you can't initiate a dash next to a slashable solid combo
+													bool CanDashSlash(int x, int y)
+													{
+														if(LinkSwordEquip() == -1) return false;
+								
+														int loc;
+														loc = ComboAt(x, y);
+								
+														// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+														// can add more combo types here by adding     || Screen->ComboT[loc] == CT_ 
+														// CT_ types you might consider CT_SLASH, CT_SLASHNEXT, CT_SLASHNEXTITEM if those are solid in your quest
+														
+														if(Screen->ComboT[loc] == CT_BUSH || Screen->ComboT[loc] == CT_BUSHNEXT ) 
+														return true;
+														
+														return false;
+													}
+							
+													// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+													// replaces the code in old Pegasus boots function for dash cutting through slashable combos.
+													// allows easier customization to suit your needs.
+													
+													void DoDashSlash(int loc)
+													{
+														int ctype = Screen->ComboT[loc];
+														int sprite;
+														int itmset = IS_COMBOS; // item set 12 (tall grass by default)
+														
+														bool playsound = false;
+														
+														// add sprites to certain types
+														if(ctype == CT_BUSH || ctype == CT_BUSHNEXT) sprite = SPRITE_BUSH_CUT;
+														else if(ctype == CT_TALLGRASS || ctype == CT_TALLGRASSNEXT) sprite = SPRITE_GRASS_CUT;
+														else if(ctype == CT_FLOWERS) sprite = SPRITE_FLOWER_CUT;
+														
+														// no sprite is typically associated with Slash type combos, but it could be added.
+														
+														// itemset is changed here to the default for these types.  could add more item sets based on type
+														if(ctype == CT_SLASHITEM || ctype == CT_SLASHNEXTITEM) itmset = 10; // default for these combo types
+														
+														//these types default to undercombo
+														if(ctype == CT_BUSH || ctype == CT_TALLGRASS || ctype == CT_FLOWERS || ctype == CT_SLASH || ctype == CT_SLASHITEM)
+														{
+															Screen->ComboD[loc] = Screen->UnderCombo;
+															playsound = true;
+														}
+														
+														//these types default to next combo
+														if(ctype == CT_BUSHNEXT || ctype == CT_TALLGRASSNEXT || ctype == CT_FLOWERS || ctype == CT_SLASHNEXT || ctype == CT_SLASHNEXTITEM)
+														{
+															Screen->ComboD[loc] += 1;
+															playsound = true;
+														}
+								
+														//no functionality added for Continuous type combos.
+														
+														if(playsound)
+														{
+															CreateGraphicAt(sprite,ComboX(loc),ComboY(loc));
+															
+															Game->PlaySound(SFX_GRASSCUT); // could have different sounds for different types too by modifyng above.
+															ItemSetAt(itmset,loc);
+														}//end playsound if
+													}
+													
+							
+													//returns the item# of an equipped sword.  checks and returns A button first, then B button.  returns -1 if no sword equipped.
+													int LinkSwordEquip()
+													{
+														itemdata itm = Game->LoadItemData( GetEquipmentA() );
+														
+														if(itm->Family==IC_SWORD) return GetEquipmentA();
+														
+														itm = Game->LoadItemData(GetEquipmentB());
+														
+														if(itm->Family==IC_SWORD) return GetEquipmentB();
+														
+														return -1;
+													}
+													
+													// the combo that link is touching in the direction he's facing
+													int TouchedComboLoc()
+													{
+														int loc;
+														loc = ComboAt( TouchedX(), TouchedY() );
+														return loc;
+													}
+													
+													// the x coord that link is touching in the direction he's facing
+													int TouchedX()
+													{
+														int x = 0;
+														if(Link->Dir == DIR_UP || Link->Dir == DIR_DOWN) x = Link->X+8; 
+														else if(Link->Dir == DIR_LEFT)  x = Link->X-1;
+														else if(Link->Dir == DIR_RIGHT) x = Link->X+17;
+														return x;
+													}
+													
+													// the y coord that link is touching in the direction he's facing
+													int TouchedY()
+													{
+														int y = 0;
+														if(Link->Dir == DIR_UP)         y = Link->Y+7;
+														else if(Link->Dir == DIR_DOWN)  y = Link->Y+17;
+														else if(Link->Dir == DIR_LEFT || Link->Dir == DIR_RIGHT)  y = Link->Y+8;
+														return y;
+													}
+													
+													// draws a sprite as a non-damaging eweapon
+													int CreateGraphicAt(int sprite, int x, int y)
+													{
+														eweapon e = Screen->CreateEWeapon(EW_SCRIPT1);
+														e->HitXOffset = 500;
+														e->UseSprite(sprite);
+														e->DeadState = Max(1,e->NumFrames*e->ASpeed);
+														e->X = x;
+														e->Y = y;
+														return e->DeadState;
+													}
+													
+													//creates and kills an enemy of type NPC_ITEMSET to fake an itemdropset.
+													void ItemSetAt(int itemset,int loc)
+													{
+														npc e = Screen->CreateNPC(NPC_ITEMSET);
+														e->ItemSet = itemset;
+														if(e->isValid()){
+															e->X = loc%16*16;
+															e->Y = loc-loc%16;
+														}
+														e->HP = HP_SILENT;
+													}
+													
+							
+													// utility function returns true if Link is jumping, necessary because SideView gravity sucks
+													// might need tweaking depending on other SideView scripts you use.
+													
+													bool IsJumping()
+													{
+														if(IsSideview())
+														{
+															if(Link->Action == LA_SWIMMING || Link->Action == LA_DIVING || Link->Action == LA_DROWNING) return false;
+															if(Link->Jump != 0) return true;
+															if(!OnSidePlatform(Link->X,Link->Y)) return true;
+														}
+														else{
+															if(Link->Z > tempPatches::BASE_LINK_Z) return true;
+														}
+														
+														return false;
+													}
+							
+							
+													// Allows drawing tiles to correct position on Link when scrolling
+													// Sets drawX/drawY either to Link X/Y when not scrolling, or the visual position when scrolling.
+													// currently only used by Pegasus Boots (which is also setting drawX/drawY to Link's new x/y as he dashes)
+													
+													void ScrollFix()
+													{
+														//function by Saffith
+														
+														if(Link->Action==LA_SCROLLING)
+														{
+															if(scrollDir==-1)
+															{
+																if(Link->Y>160)
+																{
+																	scrollDir=DIR_UP;
+																	scrollCounter=45;
+																}
+																else if(Link->Y<0)
+																{
+																	scrollDir=DIR_DOWN;
+																	scrollCounter=45;
+																}
+																else if(Link->X>240)
+																{
+																	scrollDir=DIR_LEFT;
+																	scrollCounter=65;
+																}
+																else
+																{
+																	scrollDir=DIR_RIGHT;
+																	scrollCounter=65;
+																}
+															}
+															
+															//old scrolling calcs
+                                                            // if(scrollDir==DIR_UP && scrollCounter<45 && scrollCounter>4)
+                                                            // drawY+=4;
+                                                            // else if(scrollDir==DIR_DOWN && scrollCounter<45 && scrollCounter>4)
+                                                            // drawY-=4;
+                                                            // else if(scrollDir==DIR_LEFT && scrollCounter<65 && scrollCounter>4)
+                                                            // drawX+=4;
+                                                            // else if(scrollDir==DIR_RIGHT && scrollCounter<65 && scrollCounter>4)
+                                                            // drawX-=4;
+                                                            
+                                                            drawX = Link->X+Game->Scrolling[SCROLL_NX];
+                                                            drawY = Link->Y+Game->Scrolling[SCROLL_NY];
+															
+															scrollCounter--;
+														}
+														else
+														{
+															drawX=Link->X;
+															drawY=Link->Y;
+															if(scrollDir!=-1)
+															scrollDir=-1;
+														}
+													}
+							
+													void LREx1Ex2ItemSwitch()
+													{
+														if (Link->PressL && Link->Action != LA_SCROLLING)
+														{
+															Link->SelectBWeapon(DIR_LEFT);
+														}
+														if (Link->PressR && Link->Action != LA_SCROLLING)
+														{
+															Link->SelectBWeapon(DIR_RIGHT);
+														}
+														if (Link->PressEx1 && Link->Action != LA_SCROLLING)
+														{
+															Link->SelectAWeapon(DIR_LEFT);
+														}
+														if (Link->PressEx2 && Link->Action != LA_SCROLLING)
+														{
+															Link->SelectAWeapon(DIR_RIGHT);
+														}
+													}
+													
+													
+													
+													int LinkOnComboD() 
+													{
+														return Screen->ComboD[ComboAt(Link->X+8, Link->Y+13)];
+													}
+							
+							
+												item script GhostZHClockScript
+												{
+													void run(int duration)
+													{
+														if(duration<=0)
+														__ghzhData[__GHI_CLOCK_TIMER]=-1;
+														else
+														__ghzhData[__GHI_CLOCK_TIMER]=duration;
+													}
+												}
+							
+							
+							
+							//Constants used by Ice Combos
+							const int CT_ICECOMBO = 142; //The combo type "Script1 by default"
+							const int ICE_ACCELERATION = 3;
+							const int ICE_DECELERATION = 1;
+							const int ICE_MAXSTEP     = 150;
+							
+							//Declare global variables used by Ice Combos.
+							bool isScrolling;
+							bool onice;
+							float Ice_X;
+							float Ice_Y;
+							int Ice_XStep;
+							int Ice_YStep;
+							//End declaration
+							
+							//Active Script
+							
+							
+							//Initializes global variables used for ice combos.
+							void Setup_IceCombos()
+							{
+								isScrolling = false;
+								onice = false;
+								Ice_X = 0;
+								Ice_Y = 0;
+								Ice_XStep = 0;
+								Ice_YStep = 0;
+							}
+							
+							//Adds Ice Combo functionally to CT_ICECOMBO;
+							void Update_IceCombos(int oldscreen)
+							{
+								//Update Variables
+								if(Link->Action != LA_SCROLLING)
+								{
+									if(isScrolling || oldscreen != Game->GetCurScreen() || (!onice && OnIce()))
+									{
+										Ice_X = Link->X;
+										Ice_Y = Link->Y;
+										if(isScrolling)
+										isScrolling = false;
+										else
+										{
+											Ice_XStep = 0;
+											Ice_YStep = 0;
+										}
+									}
+									onice = OnIce();
+								}
+								else
+								{
+									isScrolling = true;
+									return;
+								}
+								
+								//Ice Physics
+								if(onice)
+								{
+									//Y Adjustment
+									if(Link_Walking() && (Link->InputUp || Link->InputDown))
+									{
+										if(Link->InputUp && !Link->InputDown)
+										Ice_YStep -= ICE_ACCELERATION;
+										else if(!Link->InputUp && Link->InputDown)
+										Ice_YStep += ICE_ACCELERATION;
+									}
+									else if(Ice_YStep != 0)
+									Ice_YStep = Cond(Abs(Ice_YStep) - ICE_DECELERATION > 0, Ice_YStep - Sign(Ice_YStep)*ICE_DECELERATION, 0);
+									Ice_YStep = Clamp(Ice_YStep, -ICE_MAXSTEP, ICE_MAXSTEP);
+									
+									//X Adjustment
+									if(Link_Walking() && (Link->InputLeft || Link->InputRight))
+									{
+										if(Link->InputLeft && !Link->InputRight)
+										Ice_XStep -= ICE_ACCELERATION;
+										else if(!Link->InputLeft && Link->InputRight)
+										Ice_XStep += ICE_ACCELERATION;
+									}
+									else if(Ice_XStep != 0)
+									Ice_XStep = Cond(Abs(Ice_XStep) - ICE_DECELERATION > 0, Ice_XStep -Sign(Ice_XStep)*ICE_DECELERATION, 0);
+									Ice_XStep = Clamp(Ice_XStep, -ICE_MAXSTEP, ICE_MAXSTEP);
+									
+									//Reset the Ice Position to Link's Actual Position if he's hurt or hopping out of water.
+									if(Link->Action == LA_GOTHURTLAND || Link->Action == LA_HOPPING)
+									{
+										Ice_X = Link->X;
+										Ice_Y = Link->Y;
+									}
+									
+									//Initialize variables for solidity checking.
+									int newx = (Ice_X + Ice_XStep/100)<<0;
+									int newy = (Ice_Y + Ice_YStep/100)<<0;
+									
+									//Vertical Edge
+									if(newx < Ice_X<<0)
+									{
+										for(int y = Ice_Y+Cond(BIG_LINK, 0, 8); y < (Ice_Y<<0) + 16 && Ice_XStep != 0; y++)
+										{
+											if(Screen->isSolid(newx, y))
+											Ice_XStep = 0;
+										}
+									}
+									else if(newx > Ice_X<<0)
+									{
+										for(int y = Ice_Y+8; y < (Ice_Y<<0) + 16 && Ice_XStep != 0; y++)
+										{
+											if(Screen->isSolid(newx+15, y))
+											Ice_XStep = 0;
+										}
+									}
+									
+									//Horizontal Edge
+									if(newy < Ice_Y<<0)
+									{
+										for(int x = Ice_X; x < (Ice_X<<0) + 16 && Ice_YStep != 0; x++)
+										{
+											if(Screen->isSolid(x, newy+Cond(BIG_LINK, 0, 8)))
+											{
+												Ice_YStep = 0;
+											}
+										}
+									}
+									else if(newy > Ice_Y<<0)
+									{
+										for(int x = Ice_X; x < (Ice_X<<0) + 16 && Ice_YStep != 0; x++)
+										{
+											if(Screen->isSolid(x, newy+15))
+											{
+												Ice_YStep = 0;
+											}
+										}
+									}
+									
+									Ice_X += Ice_XStep/100;
+									Ice_Y += Ice_YStep/100;
+									Link->X = Ice_X;
+									Link->Y = Ice_Y;
+								}
+								else
+								{
+									Ice_XStep = 0;
+									Ice_YStep = 0;
+								}
+							}
+							
+							//Function used to check if Link is over a ice combo.
+							bool OnIce()
+							{
+								if(Link->Z != tempPatches::BASE_LINK_Z)
+								return false;
+								else
+								{
+									int comboLoc = ComboAt(Link->X + 8, Link->Y + 12);
+									if(Screen->ComboT[comboLoc] == CT_ICECOMBO)
+									return true;
+									else
+									return false;
+								}
+							}
+							
+							//Returns true, if keyboard input is moving Link.
+							bool Link_Walking()
+							{
+								if(UsingItem(I_HAMMER)) return false;
+								else return (Link->Action == LA_WALKING || Link->Action == LA_CHARGING || Link->Action == LA_SPINNING);
+							}
+							
+							
+							
+							int MooshPit[16];
+							const int MP_LASTX = 0;
+							const int MP_LASTY = 1;
+							const int MP_LASTDMAP = 2;
+							const int MP_LASTSCREEN = 3;
+							const int MP_ENTRYX = 4;
+							const int MP_ENTRYY = 5;
+							const int MP_ENTRYDMAP = 6;
+							const int MP_ENTRYSCREEN = 7;
+							const int MP_FALLX = 8;
+							const int MP_FALLY = 9;
+							const int MP_FALLTIMER = 10;
+							const int MP_FALLSTATE = 11;
+							const int MP_DAMAGETYPE = 12;
+							
+							const int CT_HOLELAVA = 128; //Combo type for pits (No Ground Enemies by default)
+							const int CF_LAVA = 98; //Combo flag marking pits as lava (Script 1 by default)
+							
+							const int SPR_FALLHOLE = 89; //Sprite for Link falling in a hole
+							const int SPR_FALLLAVA = 90; //Sprite for Link falling in lava
+							
+							const int SFX_FALLHOLE = 87; //Sound for falling in a hole
+							const int SFX_FALLLAVA = 13; //Sound for falling in lava
+							
+							const int DAMAGE_FALLHOLE = 8; //How much damage pits deal (1/2 heart default)
+							const int DAMAGE_FALLLAVA = 16; //How much damage lava deals (1 heart default)
+							
+							const int FFC_MOOSHPIT_AUTOWARPA = 32; //FFC that turns into an auto side warp combo when you fall in a pit
+							const int CMB_MOOSHPIT_AUTOWARPA = 6391; //Combo number of an invisible Auto Side Warp A combo
+							const int SF_MISC_MOOSHPITWARP = 2; //Number of the screen flag under the Misc. section that makes pits warp (Script 1 by default)
+							//All pit warps use Side Warp A
+							
+							const int MOOSHPIT_MIN_FALL_TIME = 60; //Minimum time for the pit's fall animation, to prevent repeated falling in pits
+							const int MOOSHPIT_EXTRA_FALL_TIME = 0; //Extra frames at the end of the falling animation before Link respawns
+							
+							//Width and height of Link's hitbox for colliding with pits
+							const int MOOSHPIT_LINKHITBOXWIDTH = 2;
+							const int MOOSHPIT_LINKHITBOXHEIGHT = 2;
+							
+							//Width and height of Link's hitbox for colliding with pits/lava in sideview
+							const int MOOSHPIT_SIDEVIEW_LINKHITBOXWIDTH = 2;
+							const int MOOSHPIT_SIDEVIEW_LINKHITBOXHEIGHT = 2;
+							
+							const int MOOSHPIT_NO_GRID_SNAP = 0; //Set to 1 to prevent Link's falling sprite from snapping to the combo grid.
+							
+							bool MooshPit_OnPit(int LinkX, int LinkY, bool countFFCs){
+								if(Link->Action==LA_FROZEN)
+								return false;
+								
+								if(countFFCs){
+									if(MooshPit_OnFFC(LinkX, LinkY))
+									return false;
+								}
+								
+								bool sideview;
+								if(Screen->Flags[SF_ROOMTYPE]&100b)
+								sideview = true;
+								//wew lad
+								int width = MOOSHPIT_LINKHITBOXWIDTH;
+								int height = MOOSHPIT_LINKHITBOXHEIGHT;
+								for(int x=0; x<=1; x++){
+									for(int y=0; y<=1; y++){
+										int X; int Y;
+										if(sideview){ //Hitbox functions differently in sideview
+											width = MOOSHPIT_SIDEVIEW_LINKHITBOXWIDTH;
+											height = MOOSHPIT_SIDEVIEW_LINKHITBOXHEIGHT;
+											X = LinkX+7-width/2+width;
+											Y = LinkY+7-height/2+height;
+										}
+										else{
+											X = LinkX+7-width/2+width;
+											Y = LinkY+11-height/2+height;
+										}
+										
+										//If one corner of Link's hitbox isn't on a pit, return false
+										if(Screen->ComboT[ComboAt(X, Y)]!=CT_HOLELAVA){
+											return false;
+										}
+									}
+								}
+								return true;
+							}
+							
+							bool MooshPit_OnFFC(int LinkX, int LinkY){
+								for(int i=1; i<=32; i++){ //Cycle through every FFC
+									ffc f = Screen->LoadFFC(i);
+									//Check if the FFC is solid
+									if(f->Data>0&&!f->Flags[FFCF_CHANGER]&&!f->Flags[FFCF_ETHEREAL]){
+										//Check if Link collides with the FFC
+										if(RectCollision(LinkX+4, LinkY+9, LinkX+11, LinkY+14, f->X, f->Y, f->X+f->EffectWidth-1, f->Y+f->EffectHeight-1)){
+											return true;
+										}
+									}
+								}
+								//If Link doesn't collide with any FFC, return false
+								return false;
+							}
+							
+							void MooshPit_Init(){
+								MooshPit[MP_LASTX] = Link->X;
+								MooshPit[MP_LASTY] = Link->Y;
+								MooshPit[MP_LASTDMAP] = Game->GetCurDMap();
+								MooshPit[MP_LASTSCREEN] = Game->GetCurDMapScreen();
+								MooshPit[MP_ENTRYX] = Link->X;
+								MooshPit[MP_ENTRYY] = Link->Y;
+								MooshPit[MP_ENTRYDMAP] = Game->GetCurDMap();
+								MooshPit[MP_ENTRYSCREEN] = Game->GetCurDMapScreen();
+								MooshPit[MP_FALLSTATE] = 0;
+								MooshPit[MP_FALLTIMER] = 0;
+								Link->CollDetection = true;
+								Link->Invisible = false;
+							}
+							
+void MooshPit_Update()
+{
+	bool isWarp;
+	if(Screen->Flags[SF_MISC]&(1<<SF_MISC_MOOSHPITWARP))
+	isWarp = true;
+	
+	bool sideview;
+	if(Screen->Flags[SF_ROOMTYPE]&100b)
+	sideview = true;
+	
+	if(Link->Action!=LA_SCROLLING){
+		//Update the entry point whenever the screen changes
+		if(MooshPit[MP_ENTRYDMAP]!=Game->GetCurDMap()||MooshPit[MP_ENTRYSCREEN]!=Game->GetCurDMapScreen()){
+			MooshPit[MP_ENTRYX] = Link->X;
+			MooshPit[MP_ENTRYY] = Link->Y;
+			MooshPit[MP_ENTRYDMAP] = Game->GetCurDMap();
+			MooshPit[MP_ENTRYSCREEN] = Game->GetCurDMapScreen();
+		}
+		
+		if(MooshPit[MP_FALLSTATE]==0)
+		{ //Not falling in pit
+			//LogPrint("FallState == 0 %s \n", "checking if over a pit");
+			//LogPrint("Link is over a pit 2? %s \n", ( (MooshPit_OnPit(Link->X, Link->Y, true)) ? "true" : "false"));
+			
+			if(Link->Z<=tempPatches::BASE_LINK_Z&&MooshPit_OnPit(Link->X, Link->Y, true))
+			{
+				//LogPrint("Link is over a pit 3? %s \n", ( (MooshPit_OnPit(Link->X, Link->Y, true)) ? "true" : "false"));
+			
+				//If Link steps on a pit
+				int underLink;
+				if(!sideview)
+				underLink = ComboAt(Link->X+8, Link->Y+12);
+				else
+				underLink = ComboAt(Link->X+8, Link->Y+8);
+				StopDash();
+				
+				lweapon fall;
+				
+				//Check if the combo is lava
+				if(ComboFI(underLink, CF_LAVA))
+				{
+					//LogPrint("We should be %s \n", "playing a sound for Lava");
+					//Play sound and display animation
+					Game->PlaySound(SFX_FALLLAVA);
+					fall = CreateLWeaponAt(LW_SCRIPT10, Link->X, Link->Y);
+					if(!MOOSHPIT_NO_GRID_SNAP){
+						fall->X = ComboX(underLink);
+						fall->Y = ComboY(underLink);
+					}
+					fall->UseSprite(SPR_FALLLAVA);
+					fall->CollDetection = false;
+					fall->DeadState = fall->ASpeed*fall->NumFrames;
+					
+					//Mark as lava damage
+					MooshPit[MP_DAMAGETYPE] = 1;
+				}
+				//Otherwise it's a pit
+				else
+				{
+					//LogPrint("We should be %s \n", "playing a sound for a pit");
+					//Play sound and display animation
+					Game->PlaySound(SFX_FALLHOLE);
+					fall = CreateLWeaponAt(LW_SCRIPT10, Link->X, Link->Y);
+					if(!MOOSHPIT_NO_GRID_SNAP){
+						fall->X = ComboX(underLink);
+						fall->Y = ComboY(underLink);
+					}
+					fall->UseSprite(SPR_FALLHOLE);
+					fall->CollDetection = false;
+					fall->DeadState = fall->ASpeed*fall->NumFrames;
+					
+					//Mark as hole damage
+					MooshPit[MP_DAMAGETYPE] = 0;
+				}
+				
+				MooshPit[MP_FALLX] = Link->X;
+				MooshPit[MP_FALLY] = Link->Y;
+				
+				//Cooldown should last as long as the fall animation
+				MooshPit[MP_FALLSTATE] = 1;
+				MooshPit[MP_FALLTIMER] = Max(MOOSHPIT_MIN_FALL_TIME, fall->DeadState+MOOSHPIT_EXTRA_FALL_TIME);
+				
+				//Render Link invisible and intangible
+				Link->Invisible = true;
+				Link->CollDetection = false;
+				
+				NoAction();
+				StopDash();
+			}
+			else if(!MooshPit_OnPit(Link->X, Link->Y, false)&&Link->Action!=LA_FROZEN){ //All other times, while Link is on solid ground, record Link's last position
+				if(sideview){
+					//Link has no Z value in sideview, so we check if he's on a platform instead
+					if(OnSidePlatform(Link->X, Link->Y)){
+						MooshPit[MP_LASTDMAP] = Game->GetCurDMap();
+						MooshPit[MP_LASTSCREEN] = Game->GetCurDMapScreen();
+						MooshPit[MP_LASTX] = Link->X;
+						MooshPit[MP_LASTY] = Link->Y;
+					}
+				}
+				else{
+					if(Link->Z<=tempPatches::BASE_LINK_Z){
+						MooshPit[MP_LASTDMAP] = Game->GetCurDMap();
+						MooshPit[MP_LASTSCREEN] = Game->GetCurDMapScreen();
+						MooshPit[MP_LASTX] = Link->X;
+						MooshPit[MP_LASTY] = Link->Y;
+					}
+				}
+			}
+		}
+		else if(MooshPit[MP_FALLSTATE]==1){ //Falling animation
+			if(MooshPit[MP_FALLTIMER]>0)
+			MooshPit[MP_FALLTIMER]--;
+			
+			Link->Jump = 0;
+			Link->Z = 0;
+			
+			//Keep Link invisible just in case
+			Link->Invisible = true;
+			Link->CollDetection = false;
+			NoAction();
+			StopDash();
+			if(MooshPit[MP_FALLTIMER]==0){
+				if(!isWarp||MooshPit[MP_DAMAGETYPE]==1){ //If the pit isn't a warp, deal damage and move Link back to the return point
+					//If the entry would dump Link back in the pit, dump him out at the failsafe position
+					if(MooshPit_OnPit(MooshPit[MP_ENTRYX], MooshPit[MP_ENTRYY], false)){
+						Link->X = MooshPit[MP_LASTX];
+						Link->Y = MooshPit[MP_LASTY];
+						//If the failsafe position was on a different screen, warp there
+						if(Game->GetCurDMap()!=MooshPit[MP_LASTDMAP]||Game->GetCurDMapScreen()!=MooshPit[MP_LASTSCREEN]){
+							Link->PitWarp(MooshPit[MP_LASTDMAP], MooshPit[MP_LASTSCREEN]);
+						}
+						
+						Link->Invisible = false;
+						Link->CollDetection = true;
+					}
+					else{
+						//Move Link to the start and make him visible
+						Link->X = MooshPit[MP_ENTRYX];
+						Link->Y = MooshPit[MP_ENTRYY];
+						
+						Link->Invisible = false;
+						Link->CollDetection = true;
+					}
+					
+					//Subtract HP based on damage type
+					if(MooshPit[MP_DAMAGETYPE]==1)
+					Link->HP -= DAMAGE_FALLLAVA;
+					else
+					Link->HP -= DAMAGE_FALLHOLE;
+					//Play hurt sound and animation
+					Link->Action = LA_GOTHURTLAND;
+					Link->HitDir = -1;
+					Game->PlaySound(SFX_OUCH);
+					
+					MooshPit[MP_FALLSTATE] = 0;
+				}
+				else{
+					MooshPit[MP_FALLSTATE] = 2;
+					MooshPit[MP_FALLTIMER] = 1;
+					ffc warp = Screen->LoadFFC(FFC_MOOSHPIT_AUTOWARPA);
+					warp->Data = CMB_MOOSHPIT_AUTOWARPA;
+					warp->Flags[FFCF_CARRYOVER] = false;
+				}
+			}
+		}
+		else if(MooshPit[MP_FALLSTATE]==2){ //Just warped
+			if(sideview){
+				Link->X = MooshPit[MP_FALLX];
+				Link->Y = 0;
+			}
+			else{
+				Link->X = MooshPit[MP_FALLX];
+				Link->Y = MooshPit[MP_FALLY];
+				Link->Z = 176;
+			}
+			Link->Invisible = false;
+			Link->CollDetection = true;
+			
+			MooshPit[MP_FALLSTATE] = 0;
+			MooshPit[MP_FALLTIMER] = 0;
+		}
+	}
+}
+							
+							void MooshPit_ResetEntry(){
+								MooshPit[MP_ENTRYX] = Link->X;
+								MooshPit[MP_ENTRYY] = Link->Y;
+								MooshPit[MP_ENTRYDMAP] = Game->GetCurDMap();
+								MooshPit[MP_ENTRYSCREEN] = Game->GetCurDMapScreen();
+							}
+							
+							//Set this to the item's ID.
+							const int POTION_ID = 146;
+							
+							//Set this to the number of the sound effect to be played when the medicine takes effect.
+							const int POTION_SFX = 22;
+							
+							//Set to 1 if you want a message to be displayed when the medicine takes effect.
+							//Set to 0 if you don't want a message to be displayed.
+							const int DISPLAY_MESSAGE = 1;
+							
+							//Set this to the number of the message that will be displayed when the medicine takes effect.
+							const int MESSAGE = 1;
+
+					
+							
+							void onScreenChange()
+{
+    Game->SkipF6 = false;
+}
+
+global script slot2
+{
+	void run()
+	{
+		TraceS("@Running globl");
+		// Initialize variables used to listen on screen changes
+		int curscreen = -1; int lastScreen = Game->GetCurScreen();
+		int lastMap = Game->GetCurMap();
+		int oldscreen = Game->GetCurScreen();
+		StartGhostZH();
+		
+		while (true)
+		{
+			ScrollFix();
+			UpdateGhostZH1();
+			PegasusBoots();
+			PushAnimation();
+			ShieldSelection();
+			//LogPrint("Link->Z is %d \n ", Link->Z);
+			//LogPrint("DashCounter is %d \n ", DashCounter);
+			//LogPrint("Link is over a pit? %s \n", ( (MooshPit_OnPit(Link->X, Link->Y, true)) ? "true" : "false"));
+			MooshPit_Update();
+			
+			if (Link->HP <= 0 && Link->Item[POTION_ID]) 
+			{
+				Link->HP = Link->MaxHP;
+				Link->Item[POTION_ID] = false;
+				Game->PlaySound(POTION_SFX);
+				
+				if (DISPLAY_MESSAGE > 0) {
+					Screen->Message(MESSAGE);
+				}
+			}
+			if(lastScreen != Game->GetCurScreen() || lastMap != Game->GetCurMap())
+			{
+				onScreenChange();
+				lastScreen = Game->GetCurScreen();
+				lastMap = Game->GetCurMap();
+			}
+			Waitdraw();
+			UpdateGhostZH2();
+			// Keep track of screen changes
+			// Run a Barrier script on every screen change
+			if (Game->GetCurScreen() != curscreen)
+			{
+				curscreen = Game->GetCurScreen();
+				Barriers_NewScreen();
+			}
+			LREx1Ex2ItemSwitch();
+			
+			
+			Update_IceCombos(oldscreen);
+			oldscreen = Game->GetCurScreen();
+			
+			
+
+			Waitframe();
+				
+		}
+			
+	}
+}
+
+global script Init
+{
+	void run()
+	{
+		MooshPit_Init();
+	}
+}
