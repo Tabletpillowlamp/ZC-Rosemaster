@@ -93,7 +93,7 @@ const int EZBI_ATTACKFLAG			= 319; //Flags that the enemy is currently attacking
 //NOTE: To set shave offsets, set the enemy's Attribute 5 to (ShaveX+ShaveY*16)
 ffc script EZBoss{
 	void run(int enemyid){
-		int i; int j; int k; int m; int i1; 
+		int i; int j; int k; int m; int i1; int i2; int i3; int i4; int i5; int i6;
 		int angle; int dist; 
 		int x; int y;
 		int vX; int vY;
@@ -3396,6 +3396,241 @@ ffc script EZBoss{
 						Game->PlaySound(SFX_EZB_LIGHTNING);
 						EZB_RunEffect(3, CenterX(ghost), CenterY(ghost), angle, laserColors[0], laserColors[1], laserColors[2], ghost->WeaponDamage);
 					EZB_Waitframes(this, ghost, vars, 30);
+					}
+				}
+				if(attack==125){ //Armarry
+					EZB_FaceLink(this, ghost, vars);
+					EZB_FiringAnim(this, ghost, vars, 1);
+					Game->PlaySound(35);
+					EZB_Waitframes(this, ghost, vars, 30);
+					k = Choose(-1, 1);
+					angle = Rand(360);
+					for(i=0; i<10; ++i){
+						for(j=0; j<8; ++j){
+							EZB_Fire(this, ghost, vars, CenterX(ghost)-8, CenterY(ghost)-8, angle+72*j, 300);
+						}
+						angle += 8*k;
+						EZB_Waitframes(this, ghost, vars, 20);
+					}
+					EZB_Waitframes(this, ghost, vars, 24);
+				}
+				if(attack==126){ //Elena
+					if (ghost->HP >= 100) {
+						EZB_FaceLink(this, ghost, vars);
+						EZB_FiringAnim(this, ghost, vars, 0);
+						EZB_Fire(this, ghost, vars, CenterX(ghost)-8, CenterY(ghost)-8, Angle(CenterX(ghost), CenterY(ghost), CenterLinkX(), CenterLinkY()), 500);
+						EZB_Waitframes(this, ghost, vars, 20);
+					}
+					else if (ghost->HP >= 50){
+						for(i=0; i<3; ++i){
+							EZB_FaceLink(this, ghost, vars);
+							EZB_FiringAnim(this, ghost, vars, 0);
+							EZB_Fire(this, ghost, vars, CenterX(ghost)-8, CenterY(ghost)-8, Angle(CenterX(ghost), CenterY(ghost), CenterLinkX(), CenterLinkY()), 500);
+							EZB_Waitframes(this, ghost, vars, 10);
+						}
+					}
+					else {
+						for(i=0; i<5; ++i){
+							EZB_FaceLink(this, ghost, vars);
+							EZB_FiringAnim(this, ghost, vars, 0);
+							EZB_Fire(this, ghost, vars, CenterX(ghost)-8, CenterY(ghost)-8, Angle(CenterX(ghost), CenterY(ghost), CenterLinkX(), CenterLinkY()), 500);
+							EZB_Waitframes(this, ghost, vars, 5);
+						}
+					}
+				}
+				
+				if(attack==127){ //Belph 1
+					for(i=0; i<5; ++i){
+						EZB_Teleport(this, ghost, vars);
+						
+						EZB_FiringAnim(this, ghost, vars, 0);
+						EZB_Waitframes(this, ghost, vars, 12);
+						angle = Angle(CenterX(ghost), CenterY(ghost), CenterLinkX(), CenterLinkY());
+						EZB_Waitframes(this, ghost, vars, 4);
+						for(j=0; j<8; ++j){
+						EZB_Fire(this, ghost, vars, CenterX(ghost)-8, CenterY(ghost)-8, 45*j, 250);
+						}
+						for(j=0; j<8; ++j){
+						EZB_Fire(this, ghost, vars, CenterX(ghost)-8, CenterY(ghost)-8, 45*j, 150);
+						}
+						EZB_Waitframes(this, ghost, vars, 8);
+					}
+				}
+				
+				if(attack==128){ //Belph 2
+					EZB_FaceLink(this, ghost, vars);
+					EZB_FiringAnim(this, ghost, vars, 1);
+					Game->PlaySound(35);
+					EZB_Waitframes(this, ghost, vars, 40);
+					
+					Game->PlaySound(56);
+					
+					if (ghost->HP >= 100) {
+						i1 = Rand(1,5);
+						if (i1 == 1) {
+							enem = CreateNPCAt(186, 80, 56);
+							enem = CreateNPCAt(186, 160, 120);
+						}
+						else if (i1 == 2) {
+							enem = CreateNPCAt(79, 80, 56);
+							enem = CreateNPCAt(120, 160, 120);
+						}
+						else if (i1 == 3) {
+							enem = CreateNPCAt(256, 160, 56);
+							enem = CreateNPCAt(186, 80, 120);
+						}
+						else if (i1 == 4) {
+							enem = CreateNPCAt(256, 160, 56);
+							enem = CreateNPCAt(79, 80, 120);
+						}
+						else if (i1 == 5) {
+							enem = CreateNPCAt(49, 80, 56);
+							enem = CreateNPCAt(49, 160, 56);
+							enem = CreateNPCAt(49, 80, 120);
+							enem = CreateNPCAt(49, 160, 120);
+						}
+					}
+					else{
+						i1 = Rand(1,4);
+						if (i1 == 1) {
+							enem = CreateNPCAt(373, 80, 56);
+							enem = CreateNPCAt(373, 160, 120);
+						}
+						else if (i1 == 2) {
+							enem = CreateNPCAt(79, 80, 56);
+							enem = CreateNPCAt(120, 160, 120);
+						}
+						else if (i1 == 3) {
+							enem = CreateNPCAt(256, 160, 56);
+							enem = CreateNPCAt(99, 80, 120);
+						}
+						else if (i1 == 4) {
+							enem = CreateNPCAt(360, 80, 56);
+						}
+					}	
+				}
+				
+				if(attack==129){ //Belph 3
+					EZB_FaceLink(this, ghost, vars);
+					EZB_FiringAnim(this, ghost, vars, 1);
+					Game->PlaySound(35);
+					EZB_Waitframes(this, ghost, vars, 50);
+					
+					if (ghost->HP >= 120) {
+						for(i=0; i<4; ++i){
+							EZB_Fire(this, ghost, vars, 0, CenterLinkY()-8, 0, 400);
+							EZB_Waitframes(this, ghost, vars, 36);
+							EZB_Fire(this, ghost, vars, 240, CenterLinkY()-8, 180, 400);
+							EZB_Waitframes(this, ghost, vars, 36);
+						}
+					}
+					else {
+						for(i=0; i<6; ++i){
+							EZB_Fire(this, ghost, vars, 0, CenterLinkY()-8, 0, 440);
+							EZB_Waitframes(this, ghost, vars, 28);
+							EZB_Fire(this, ghost, vars, 240, CenterLinkY()-8, 180, 440);
+							EZB_Waitframes(this, ghost, vars, 28);
+						}
+						Game->PlaySound(24);
+						enem = CreateNPCAt(93, CenterX(ghost)-8+Rand(-4, 4),CenterY(ghost)-8+Rand(-4, 4));
+						for(j=0; j<8; ++j){
+						EZB_Fire(this, ghost, vars, CenterX(ghost)-8, CenterY(ghost)-8, 45*j, 150);
+						}
+					}
+				}
+				
+				if(attack==130) { //Belph 4
+					EZB_FaceLink(this, ghost, vars);
+					EZB_FiringAnim(this, ghost, vars, 1);
+					Game->PlaySound(70);
+					EZB_Waitframes(this, ghost, vars, 50);
+					
+					if (ghost->HP >= 100) {
+						for(j=0; j<8; ++j){
+						EZB_Fire(this, ghost, vars, CenterX(ghost)-8, CenterY(ghost)-8, 45*j, 300);
+						}
+						for(j=0; j<8; ++j){
+						EZB_Fire(this, ghost, vars, CenterX(ghost)-8, CenterY(ghost)-8, 45*j, 250);
+						}
+						for(j=0; j<8; ++j){
+						EZB_Fire(this, ghost, vars, CenterX(ghost)-8, CenterY(ghost)-8, 45*j, 200);
+						}
+					}
+					else {
+						Game->PlaySound(24);
+						enem = CreateNPCAt(93, CenterX(ghost)-8+Rand(-4, 4), CenterY(ghost)-8+Rand(-4, 4));
+						for(j=0; j<8; ++j){
+						EZB_Fire(this, ghost, vars, CenterX(ghost)-8, CenterY(ghost)-8, 45*j, 200);
+						}
+						EZB_Waitframes(this, ghost, vars, 90);
+						Game->PlaySound(24);
+						enem = CreateNPCAt(93, CenterX(ghost)-8+Rand(-4, 4), CenterY(ghost)-8+Rand(-4, 4));
+						for(j=0; j<8; ++j){
+						EZB_Fire(this, ghost, vars, CenterX(ghost)-8, CenterY(ghost)-8, 45*j, 250);
+						}
+						EZB_Waitframes(this, ghost, vars, 90);
+						Game->PlaySound(24);
+						enem = CreateNPCAt(93, CenterX(ghost)-8+Rand(-4, 4), CenterY(ghost)-8+Rand(-4, 4));
+						for(j=0; j<8; ++j){
+						EZB_Fire(this, ghost, vars, CenterX(ghost)-8, CenterY(ghost)-8, 45*j, 300);
+						}
+						EZB_Waitframes(this, ghost, vars, 90);
+					}
+				}
+				
+				if(attack==131) { //Belph 5
+					EZB_FaceLink(this, ghost, vars);
+					EZB_FiringAnim(this, ghost, vars, 1);
+					if (ghost->HP >= 90) {
+						Game->PlaySound(36);
+					}
+					else {
+						Game->PlaySound(70);
+					}
+					EZB_Waitframes(this, ghost, vars, 30);
+					
+					Game->PlaySound(54);
+					
+					if (ghost->HP >= 90) {
+						angle = Angle(CenterX(ghost), CenterY(ghost), CenterLinkX(), CenterLinkY());
+						k = 2;
+						Game->PlaySound(SFX_EZB_DASH);
+						while(EZB_CanMoveAngle(angle)){
+							k = Min(k+0.2, 5);
+							Ghost_MoveAtAngle(angle, k, 0);
+							EZB_Trail(this, ghost, vars);
+							EZB_Waitframe(this, ghost, vars);
+						}
+					}
+					else {
+						angle = Angle(CenterX(ghost), CenterY(ghost), CenterLinkX(), CenterLinkY());
+						k = 2;
+						Game->PlaySound(SFX_EZB_DASH);
+						i = 0;
+						while(EZB_CanMoveAngle(angle)){
+							++i;
+							k = Min(k+0.2, 5);
+							Ghost_MoveAtAngle(angle, k, 0);
+							if(i%4==0){
+								if(ghost->Weapon==WPN_ENEMYFLAME||ghost->Weapon==WPN_ENEMYFIRETRAIL){
+									EZB_Fire(this, ghost, vars, CenterX(ghost)-8, CenterY(ghost)-8, Angle(CenterX(ghost), CenterY(ghost), CenterLinkX(), CenterLinkY()), 0);
+								}
+								else{
+									EZB_Fire(this, ghost, vars, CenterX(ghost)-8, CenterY(ghost)-8, Angle(CenterX(ghost), CenterY(ghost), CenterLinkX(), CenterLinkY()), 150);
+								}
+							}
+							EZB_Trail(this, ghost, vars);
+							EZB_Waitframe(this, ghost, vars);
+						}
+						if (ghost->HP <= 50) {
+							Game->PlaySound(36);
+							EZB_Waitframes(this, ghost, vars, 50);
+							Game->PlaySound(24);
+							enem = CreateNPCAt(93, CenterX(ghost)-8+Rand(-4, 4),CenterY(ghost)-8+Rand(-4, 4));
+							for(j=0; j<8; ++j){
+							EZB_Fire(this, ghost, vars, CenterX(ghost)-8, CenterY(ghost)-8, 45*j, 150);
+							}
+						}
 					}
 				}
 				

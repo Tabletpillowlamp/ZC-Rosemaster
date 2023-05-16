@@ -23,7 +23,9 @@ item script BoltSpell{
     void run(int power, int arrowSprite, int magicCost, int speed, int Script_ID, int colour, int duration, int screenDamage){
      if (Game->Counter[CR_MAGIC] >= magicCost) //Fill in the numbers for magic consumption and number of projectiles allowed on screen
         {
-     Screen->Wavy = 10; //Makes the screen waver slightly while screen flashes and bolt projectile emits.
+	Game -> PlaySound (36);
+	Waitframes(40);
+     Screen->Wavy = 15; //Makes the screen waver slightly while screen flashes and bolt projectile emits.
      Game->Counter[CR_MAGIC] -= magicCost; //Sets the MP cost for using the weapon.
      int args[8] = {colour, duration}; //Sets the colour and duration of the flash in the FFC script.
  npc enemys; //Reads the enemies on screen...
@@ -33,7 +35,7 @@ item script BoltSpell{
          enemys->HP-=screenDamage; //Deals (value of D7) damage to all enemies on-screen during flash.
          }
         
-    
+		RunFFCScript(Script_ID, args); //Runs the FFC script that makes the screen flash.
         int startX; //the starting position of the LWeapon sprite (X-axis)
         int startY; //the starting position of the LWeapon sprite (Y-axis)
         int startHP = Link->HP; //Needed if you want to include an HP requirement.
@@ -41,11 +43,21 @@ item script BoltSpell{
         Game->PlaySound(ThunderSFX); //Makes the thunder SFX play.
         startX = Link->X+8; //Sets starting position of LWeapon based on Link's position (+8 pixels)
         startY = Link->Y+8; //Sets starting position of LWeapon based on Link's position (+8 pixels)
-        Link->Action = LA_ATTACKING; //Produces Link attacking animation. 
-        bolt = NextToLink(LW_ARROW, 8);  //Create in front of Link.
-        bolt->UseSprite(arrowSprite); //Sets the sprite to use from Weapons->Misc.
-        bolt->Damage = power; //Sets the damage of the projectile.
-        bolt->Step = speed; //Sets the Step Speed of the projectile, suggest 200-240.
+        Link->Action = LA_ATTACKING; //Produces Link attacking animation.
+		for(int i; i < 20; i++){
+			for(int j; j < 8; j++){
+					lweapon bolt = CreateLWeaponAt(LW_BEAM, Link->X, Link->Y);
+					bolt->Dir = j;
+					bolt->Step = speed;
+					bolt->Angular = true;
+					bolt->Angle = DegtoRad(j*45);
+					bolt->UseSprite(arrowSprite);
+					bolt->Damage = power;
+				}
+			Game -> PlaySound (86);
+			Waitframes(40);
+		}
+			
         RunFFCScript(Script_ID, args); //Runs the FFC script that makes the screen flash.
         Link->ItemJinx = BOLT_NOUSE;
         }

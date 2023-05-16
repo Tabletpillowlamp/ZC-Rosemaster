@@ -52,6 +52,9 @@ ffc script Bombchu_FFC{
 					if(dir == -1) dir = DIR_RIGHT;
 				}
 				if(dir != -1) bombchu->Dir = dir;
+				
+				if(Link->InputA) Link->PressA = true;
+				if(Link->InputB) Link->PressB = true;
 			}
 			//Update the sprite based off direction.
 			bombchu->UseSprite(sprite);
@@ -93,8 +96,16 @@ ffc script Bombchu_FFC{
 					blast->Damage = damage;
 				}
 				else if(blastType == 1){
-					lweapon blast = CreateLWeaponAt(LW_SBOMBBLAST, bombchu->X, bombchu->Y);
+					lweapon blast = CreateLWeaponAt(LW_BOMBBLAST, bombchu->X, bombchu->Y);
 					blast->Damage = damage;
+					for(int i; i < 8; i++){
+						lweapon fire = CreateLWeaponAt(LW_FIRE, bombchu->X, bombchu->Y);
+						fire->Dir = i;
+						fire->Step = 150;
+						fire->Angular = true;
+						fire->Angle = DegtoRad(i*45);
+						fire->Damage = damage * 0.5;
+					}
 				}
 				else if(blastType == 2){
 					for(int i; i < 8; i++){

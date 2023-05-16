@@ -174,6 +174,9 @@ ffc script ResetCounter
         Game->MCounter[CR_BOMBS] = 0;
         Game->MCounter[CR_ARROWS] = 0;
 		Game->MCounter[CR_SCRIPT1] = 0;
+		
+		itemdata smallShield = Game->LoadItemData(93);
+		smallShield->Level = 2;
     }
 }
 
@@ -255,34 +258,16 @@ item script CrossFlames{
 void run(int flamesprite, int speed, int damage, int soundeffect){
 
 Link->Action = LA_ATTACKING;
-        //The first flame.
-lweapon fireone = NextToLink(LW_FIRE,0);
-Game -> PlaySound (soundeffect);
-fireone->Dir = 0;
-fireone->Step = speed;
-fireone->UseSprite(flamesprite);
-fireone->Damage = damage;
-
-        //The second flame.
-lweapon firetwo = NextToLink(LW_FIRE,0);
-firetwo->Dir = 1;
-firetwo->Step = speed;
-firetwo->UseSprite(flamesprite);
-firetwo->Damage = damage;
-
-        //The third flame.
-lweapon firethree = NextToLink(LW_FIRE,0);
-firethree->Dir = 2;
-firethree->Step = speed;
-firethree->UseSprite(flamesprite);
-firethree->Damage = damage;
-
-        //The fourth flame.
-lweapon firefour = NextToLink(LW_FIRE,0);
-firefour->Dir = 3;
-firefour->Step = speed;
-firefour->UseSprite(flamesprite);
-firefour->Damage = damage;
+	Game -> PlaySound (soundeffect);
+	for(int i; i < 8; i++){
+		lweapon fire = CreateLWeaponAt(LW_FIRE, Link->X, Link->Y);
+		fire->Dir = i;
+		fire->Step = speed * 1.5;
+		fire->Angular = true;
+		fire->Angle = DegtoRad(i*45);
+		fire->UseSprite(flamesprite);
+		fire->Damage = damage;
+	}
 
         //The above format for each flame can be imitated for more flames, or removed for fewer flames.
 Waitframes(60);

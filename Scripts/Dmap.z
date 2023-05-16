@@ -43,5 +43,45 @@ global script onContinue
     void run()
     {
         checkDMapChanges();
+		
+		itemdata shield00 = Game->LoadItemData(135);	//None
+		itemdata shield01 = Game->LoadItemData(93);		//Small Shield
+		itemdata shield02 = Game->LoadItemData(8);		//Big Shield
+		itemdata shield03 = Game->LoadItemData(37);		//Mirror Shield
+		itemdata shield04 = Game->LoadItemData(212);	//Baby Costume
+		itemdata shield05 = Game->LoadItemData(210);	//Moogle Costume
+		itemdata shield06 = Game->LoadItemData(213);	//Chocobo Costume
+		itemdata shield07 = Game->LoadItemData(211);	//Linkle Costume
+		itemdata shield08 = Game->LoadItemData(136);	//Knight's Armor
+		itemdata shield09 = Game->LoadItemData(239);	//Summer Gear
+		itemdata shield10 = Game->LoadItemData(240);	//Business Gear
+		itemdata shield11 = Game->LoadItemData(26);		//Blue Dragon
+		itemdata shield12 = Game->LoadItemData(65);		//Orange Dragon
+		itemdata shield13 = Game->LoadItemData(63);		//Green Dragon
+		itemdata shield14 = Game->LoadItemData(105);	//Purple Dragon
+		itemdata shield15 = Game->LoadItemData(12);		//Black Dragon
+		itemdata shield16 = Game->LoadItemData(118);	//White Dragon
+		itemdata shield17 = Game->LoadItemData(90);		//Red Dragon
+		
+		if (shield_sel != 0){
+			shield00->Level = 1;
+			if	(shield_sel==1){shield01->Level = 2;}
+			else if	(shield_sel==2){shield02->Level = 2;}
+			else if	(shield_sel==3){shield03->Level = 2;}
+			else if	(shield_sel==4){shield04->Level = 2;}
+			else if	(shield_sel==5){shield05->Level = 2;}
+			else if	(shield_sel==6){shield06->Level = 2;}
+			else if	(shield_sel==7){shield07->Level = 2;}
+			else if	(shield_sel==8){shield08->Level = 2;}
+			else if	(shield_sel==9){shield09->Level = 2;}
+			else if	(shield_sel==10){shield10->Level = 2;}
+			else if	(shield_sel==11){shield11->Level = 2;}
+			else if	(shield_sel==12){shield12->Level = 2;}
+			else if	(shield_sel==13){shield13->Level = 2;}
+			else if	(shield_sel==14){shield14->Level = 2;}
+			else if	(shield_sel==15){shield15->Level = 2;}
+			else if	(shield_sel==16){shield16->Level = 2;}
+			else if	(shield_sel==17){shield17->Level = 2;}
+		}
     }
 }
