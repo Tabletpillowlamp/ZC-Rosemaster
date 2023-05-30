@@ -33,6 +33,45 @@ ffc script Earthquake
     }
 }
 
+item script Hammer2{
+	void run(){
+		Waitframes(15);
+		Screen->Quake = 20;
+			
+			lweapon firet = NextToLink(LW_BEAM,0);
+			if(Link->Dir == 1){
+				firet->Dir = 6;
+				}
+			else if(Link->Dir == 3){
+				firet->Dir = 5;
+				}
+			else{
+				firet->Dir = 4;
+			}
+			firet->Step = 500;
+			firet->UseSprite(172);
+			firet->Damage = 8;
+
+			//The third flame.
+			lweapon fireth = NextToLink(LW_BEAM,0);
+			if(Link->Dir == 0){
+				fireth->Dir = 5;
+				}
+			else if(Link->Dir == 2){
+				fireth->Dir = 6;
+				}
+			else{
+				fireth->Dir = 7;
+			}
+			fireth->Step = 500;
+			fireth->UseSprite(172);
+			fireth->Damage = 8;
+			
+			Waitframes(16);
+	}
+}
+
+
 ffc script Flash
 {
     void run(int wait)

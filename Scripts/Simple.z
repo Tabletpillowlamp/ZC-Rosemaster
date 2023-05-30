@@ -277,49 +277,50 @@ Waitframes(60);
 
 item script Wand2{
 
-void run(int speed){
+	void run(int speed, int cost){
+		if (Link->MP >= cost){ 
+			Waitframes(16);
+			Link->MP -= cost * Game->Generic[GEN_MAGICDRAINRATE];
+			lweapon fireone = NextToLink(LW_MAGIC,0);
+			Game -> PlaySound (84);
+			fireone->Dir = Link->Dir;
+			fireone->Step = speed;
+			fireone->UseSprite(98);
+			fireone->Damage = 16;
+			
+			lweapon firet = NextToLink(LW_MAGIC,0);
+			if(Link->Dir == 1){
+				firet->Dir = 6;
+				}
+			else if(Link->Dir == 3){
+				firet->Dir = 5;
+				}
+			else{
+				firet->Dir = 4;
+			}
+			firet->Step = speed * 0.75;
+			firet->UseSprite(98);
+			firet->Damage = 16;
 
-Waitframes(16);
-        //The first flame.
-lweapon fireone = NextToLink(LW_FIRE,0);
-Game -> PlaySound (84);
-fireone->Dir = Link->Dir;
-fireone->Step = speed;
-fireone->UseSprite(12);
-fireone->Damage = 8;
-
-        //The second flame.
-lweapon firetwo = NextToLink(LW_FIRE,0);
-if(Link->Dir == 1){
-	firetwo->Dir = 6;
+			//The third flame.
+			lweapon fireth = NextToLink(LW_MAGIC,0);
+			if(Link->Dir == 0){
+				fireth->Dir = 5;
+				}
+			else if(Link->Dir == 2){
+				fireth->Dir = 6;
+				}
+			else{
+				fireth->Dir = 7;
+			}
+			fireth->Step = speed * 0.75;
+			fireth->UseSprite(98);
+			fireth->Damage = 16;
+			
+		}
+		else{
+			Game -> PlaySound (68);
+		}
 	}
-else if(Link->Dir == 3){
-	firetwo->Dir = 5;
-	}
-else{
-	firetwo->Dir = 4;
-}
-firetwo->Step = speed;
-firetwo->UseSprite(12);
-firetwo->Damage = 8;
-
-        //The third flame.
-lweapon firethree = NextToLink(LW_FIRE,0);
-if(Link->Dir == 0){
-	firethree->Dir = 5;
-	}
-else if(Link->Dir == 2){
-	firethree->Dir = 6;
-	}
-else{
-	firethree->Dir = 7;
-}
-firethree->Step = speed;
-firethree->UseSprite(12);
-firethree->Damage = 8;
-
-        //The above format for each flame can be imitated for more flames, or removed for fewer flames.
-Waitframes(32);
-}
 
 }

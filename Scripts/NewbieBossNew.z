@@ -2007,7 +2007,7 @@ ffc script EZBoss{
 				if(attack==75){ //Fast Rebound
 					EZB_FiringAnim(this, ghost, vars, 1);
 					
-					for(i=0; i<80; ++i){
+					for(i=0; i<55; ++i){
 						m = Choose(laserColors[1], laserColors[2]);
 						arr1[0] = CenterX(ghost);
 						arr1[1] = CenterY(ghost);
@@ -3631,6 +3631,403 @@ ffc script EZBoss{
 							EZB_Fire(this, ghost, vars, CenterX(ghost)-8, CenterY(ghost)-8, 45*j, 150);
 							}
 						}
+					}
+				}
+				if(attack==132){ //2 Shot Spread 40 degrees v2
+					for(i1=0; i1<2; ++i1){
+						EZB_FaceLink(this, ghost, vars);
+						EZB_FiringAnim(this, ghost, vars, 0);
+						for(i=0; i<2; ++i){
+							EZB_Fire(this, ghost, vars, CenterX(ghost)-8, CenterY(ghost)-8, Angle(CenterX(ghost), CenterY(ghost), CenterLinkX(), CenterLinkY())-20+40*i, 400);
+						}
+						EZB_Waitframes(this, ghost, vars, 14);
+					}
+					EZB_FaceLink(this, ghost, vars);
+					EZB_FiringAnim(this, ghost, vars, 0);
+					for(i=-1; i<=1; ++i){
+						EZB_Fire(this, ghost, vars, CenterX(ghost)-8, CenterY(ghost)-8, Angle(CenterX(ghost), CenterY(ghost), CenterLinkX(), CenterLinkY())+30*i, 400);
+					}
+					EZB_Waitframes(this, ghost, vars, 24);
+				}
+				if(attack==133){ //Fast Shoot (Angular)
+					for(i=0; i<5; ++i){
+						EZB_FaceLink(this, ghost, vars);
+						EZB_FiringAnim(this, ghost, vars, 0);
+						EZB_Fire(this, ghost, vars, CenterX(ghost)-8, CenterY(ghost)-8, Angle(CenterX(ghost), CenterY(ghost), CenterLinkX(), CenterLinkY()), 400);
+						EZB_Waitframes(this, ghost, vars, 4);
+					}
+					EZB_Waitframes(this, ghost, vars, 24);
+				}
+				if(attack==134){ //Fast Rebound then jump twice and Shoot
+					EZB_FiringAnim(this, ghost, vars, 1);
+					
+					for(i=0; i<40; ++i){
+						m = Choose(laserColors[1], laserColors[2]);
+						arr1[0] = CenterX(ghost);
+						arr1[1] = CenterY(ghost);
+						x = arr1[0];
+						y = arr1[1];
+						angle = Angle(CenterX(ghost), CenterY(ghost), Link->X+8, Link->Y+8);
+						EZB_FaceAngle(this, ghost, vars, angle);
+						vX = VectorX(8, angle);
+						vY = VectorY(8, angle);
+						for(j=0; j<10; ++j){
+							for(k=0; k<256&&!Screen->isSolid(x, y); k+=8){
+								x += vX;
+								y += vY;
+							}
+							arr1[(j+1)*2+0] = x;
+							arr1[(j+1)*2+1] = y;
+							if(i%4<2)
+								Screen->Line(4, arr1[j*2+0], arr1[j*2+1], x, y, m, 1, 0, 0, 0, 128);
+							
+							x -= vX;
+							y -= vY;
+							if((vX<0&&Screen->isSolid(x-8, y))||(vX>0&&Screen->isSolid(x+8, y))){
+								vX = -vX;
+								x = Floor(x/8)*8+4;
+							}
+							if((vY<0&&Screen->isSolid(x, y-8))||(vY>0&&Screen->isSolid(x, y+8))){
+								vY = -vY;
+								y = Floor(y/8)*8+4;
+							}
+						}
+						EZB_Waitframe(this, ghost, vars);
+					}
+					EZB_Waitframes(this, ghost, vars, 48);
+					for(i=0; i<10; ++i){
+						x = arr1[i*2+0];
+						y = arr1[i*2+1];
+						Ghost_X = x-ghost->TileWidth*8;
+						Ghost_Y = y-ghost->TileHeight*8;
+						Game->PlaySound(SFX_EZB_DASH);
+						for(j=0; j<64; ++j){
+							angle = Angle(x, y, arr1[(i+1)*2+0], arr1[(i+1)*2+1]);
+							EZB_FaceAngle(this, ghost, vars, angle);
+							x += VectorX(8, angle);
+							y += VectorY(8, angle);
+							Ghost_X = x-ghost->TileWidth*8;
+							Ghost_Y = y-ghost->TileHeight*8;
+							dist = Distance(x, y, arr1[(i+1)*2+0], arr1[(i+1)*2+1]);
+							if(dist<8||CenterX(ghost)<0||CenterX(ghost)>255||CenterY(ghost)<0||CenterY(ghost)>175)
+								break;
+							EZB_Waitframe(this, ghost, vars);
+						}
+						if(CenterX(ghost)<0||CenterX(ghost)>255||CenterY(ghost)<0||CenterY(ghost)>175)
+							break;
+						Game->PlaySound(SFX_EZB_SHAKE);
+						Screen->Quake = 10;
+					}
+					EZB_FaceLink(this, ghost, vars);
+					EZB_FiringAnim(this, ghost, vars, 0);
+					angle = Angle(CenterX(ghost), CenterY(ghost), CenterLinkX(), CenterLinkY());
+					EZB_FaceAngle(this, ghost, vars, angle);
+					Game->PlaySound(SFX_JUMP);
+					Ghost_Jump = 2.6;
+					dist = Distance(CenterX(ghost), CenterY(ghost), CenterLinkX(), CenterLinkY());
+					k = 2;
+					if(dist<32)
+						k = 0.5;
+					else if(dist<64)
+						k = 1;
+					else if(dist<96)
+						k = 2;
+					else if(dist<128)
+						k = 3;
+					else
+						k = 4;
+					Ghost_Data = combo;
+					while(Ghost_Jump>0||Ghost_Z>0){
+						Ghost_MoveAtAngle(angle, k, 0);
+						EZB_Waitframe(this, ghost, vars);
+					}
+					
+					angle = Angle(CenterX(ghost), CenterY(ghost), CenterLinkX(), CenterLinkY());
+					EZB_FaceAngle(this, ghost, vars, angle);
+					
+					Game->PlaySound(SFX_JUMP);
+					Ghost_Jump = 2.6;
+					while(Ghost_Jump>0||Ghost_Z>0){
+						Ghost_MoveAtAngle(angle, k/2, 0);
+						EZB_Waitframe(this, ghost, vars);
+					}
+					for(i=0; i<3; ++i){
+						EZB_FaceLink(this, ghost, vars);
+						EZB_FiringAnim(this, ghost, vars, 0);
+						EZB_Fire(this, ghost, vars, CenterX(ghost)-8, CenterY(ghost)-8, Angle(CenterX(ghost), CenterY(ghost), CenterLinkX(), CenterLinkY()), 450);
+						EZB_Waitframes(this, ghost, vars, 4);
+					}
+					EZB_Waitframes(this, ghost, vars, 10);
+				}
+				if(attack==135){ //Fast Rebound Less Charge
+					EZB_FiringAnim(this, ghost, vars, 1);
+					
+					for(i=0; i<30; ++i){
+						m = Choose(laserColors[1], laserColors[2]);
+						arr1[0] = CenterX(ghost);
+						arr1[1] = CenterY(ghost);
+						x = arr1[0];
+						y = arr1[1];
+						angle = Angle(CenterX(ghost), CenterY(ghost), Link->X+8, Link->Y+8);
+						EZB_FaceAngle(this, ghost, vars, angle);
+						vX = VectorX(8, angle);
+						vY = VectorY(8, angle);
+						for(j=0; j<10; ++j){
+							for(k=0; k<256&&!Screen->isSolid(x, y); k+=8){
+								x += vX;
+								y += vY;
+							}
+							arr1[(j+1)*2+0] = x;
+							arr1[(j+1)*2+1] = y;
+							if(i%4<2)
+								Screen->Line(4, arr1[j*2+0], arr1[j*2+1], x, y, m, 1, 0, 0, 0, 128);
+							
+							x -= vX;
+							y -= vY;
+							if((vX<0&&Screen->isSolid(x-8, y))||(vX>0&&Screen->isSolid(x+8, y))){
+								vX = -vX;
+								x = Floor(x/8)*8+4;
+							}
+							if((vY<0&&Screen->isSolid(x, y-8))||(vY>0&&Screen->isSolid(x, y+8))){
+								vY = -vY;
+								y = Floor(y/8)*8+4;
+							}
+						}
+						EZB_Waitframe(this, ghost, vars);
+					}
+					EZB_Waitframes(this, ghost, vars, 48);
+					for(i=0; i<10; ++i){
+						x = arr1[i*2+0];
+						y = arr1[i*2+1];
+						Ghost_X = x-ghost->TileWidth*8;
+						Ghost_Y = y-ghost->TileHeight*8;
+						Game->PlaySound(SFX_EZB_DASH);
+						for(j=0; j<64; ++j){
+							angle = Angle(x, y, arr1[(i+1)*2+0], arr1[(i+1)*2+1]);
+							EZB_FaceAngle(this, ghost, vars, angle);
+							x += VectorX(8, angle);
+							y += VectorY(8, angle);
+							Ghost_X = x-ghost->TileWidth*8;
+							Ghost_Y = y-ghost->TileHeight*8;
+							dist = Distance(x, y, arr1[(i+1)*2+0], arr1[(i+1)*2+1]);
+							if(dist<8||CenterX(ghost)<0||CenterX(ghost)>255||CenterY(ghost)<0||CenterY(ghost)>175)
+								break;
+							EZB_Waitframe(this, ghost, vars);
+						}
+						if(CenterX(ghost)<0||CenterX(ghost)>255||CenterY(ghost)<0||CenterY(ghost)>175)
+							break;
+						Game->PlaySound(SFX_EZB_SHAKE);
+						Screen->Quake = 10;
+					}
+					EZB_Teleport(this, ghost, vars, arr1[0]-ghost->TileWidth*8, arr1[1]-ghost->TileHeight*8, 16);
+				}
+				if(attack==136){ //Gale 1
+					EZB_Waitframes(this, ghost, vars, 30);
+					EZB_FiringAnim(this, ghost, vars, 1);
+					
+					EZB_FaceLink(this, ghost, vars);
+					angle = Angle(CenterX(ghost), CenterY(ghost), CenterLinkX(), CenterLinkY());
+					
+					arr1[0] = 16+(Max(w, h)-1)*8; //Total reach of sword
+					arr1[1] = Max(w, h)*8; //Starting reach of sword
+					arr1[2] = arr1[0]-arr1[1]; //Ending reach of sword
+					
+					m = -1;
+					if (ghost->HP >= 150) {
+						for(j=0; j<3; ++j){
+							Game->PlaySound(SFX_EZB_SWORD);
+							EZB_FiringAnim(this, ghost, vars, 1);
+							EZB_FaceLink(this, ghost, vars);
+							angle = Angle(CenterX(ghost), CenterY(ghost), CenterLinkX(), CenterLinkY());
+							for(i=-1; i<=1; ++i){
+								EZB_Fire(this, ghost, vars, CenterX(ghost)-8, CenterY(ghost)-8, Angle(CenterX(ghost), CenterY(ghost), CenterLinkX(), CenterLinkY())+30*i, 400);
+							}
+							EZB_Waitframes(this, ghost, vars, 4);
+							for(i=0; i<30; ++i){
+								Ghost_MoveAtAngle(angle, 0.5+Sin(i*(180/20))*(2), 0);
+								
+								EZB_DrawSword(this, ghost, vars, CenterX(ghost)-8, CenterY(ghost)-8, angle-80*m+i*8*m, angle-60*m+i*6*m, arr1[1]+arr1[2]*Sin(i*(180/20)), ghost->WeaponDamage);
+								EZB_Waitframe(this, ghost, vars);
+							}
+							m = -m;
+							
+							if(j<2){
+								EZB_FaceLink(this, ghost, vars);
+								angle = Angle(CenterX(ghost), CenterY(ghost), CenterLinkX(), CenterLinkY());
+							}
+						}
+					}
+					else {
+						for(j=0; j<5; ++j){
+							Game->PlaySound(SFX_EZB_SWORD);
+							EZB_FiringAnim(this, ghost, vars, 1);
+							EZB_FaceLink(this, ghost, vars);
+							angle = Angle(CenterX(ghost), CenterY(ghost), CenterLinkX(), CenterLinkY());
+							for(i=-1; i<=1; ++i){
+								EZB_Fire(this, ghost, vars, CenterX(ghost)-8, CenterY(ghost)-8, Angle(CenterX(ghost), CenterY(ghost), CenterLinkX(), CenterLinkY())+30*i, 440);
+							}
+							EZB_Waitframes(this, ghost, vars, 4);
+							for(i=0; i<30; ++i){
+								Ghost_MoveAtAngle(angle, 0.5+Sin(i*(180/20))*(2), 0);
+								
+								EZB_DrawSword(this, ghost, vars, CenterX(ghost)-8, CenterY(ghost)-8, angle-80*m+i*8*m, angle-60*m+i*6*m, arr1[1]+arr1[2]*Sin(i*(180/20)), ghost->WeaponDamage);
+								EZB_Waitframe(this, ghost, vars);
+							}
+							m = -m;
+							
+							if(j<2){
+								EZB_FaceLink(this, ghost, vars);
+								angle = Angle(CenterX(ghost), CenterY(ghost), CenterLinkX(), CenterLinkY());
+							}
+						}
+					}
+					EZB_Waitframes(this, ghost, vars, 24);
+				}
+				if(attack==137){ //Gale 2
+					for(i1=0; i1<3; ++i1){
+						EZB_FaceLink(this, ghost, vars);
+						EZB_FiringAnim(this, ghost, vars, 0);
+						angle = Angle(CenterX(ghost), CenterY(ghost), CenterLinkX(), CenterLinkY());
+						EZB_FaceAngle(this, ghost, vars, angle);
+						Game->PlaySound(SFX_JUMP);
+						Ghost_Jump = 2.6;
+						dist = Distance(CenterX(ghost), CenterY(ghost), CenterLinkX(), CenterLinkY());
+						k = 2;
+						if(dist<32)
+							k = 0.5;
+						else if(dist<64)
+							k = 1;
+						else if(dist<96)
+							k = 2;
+						else if(dist<128)
+							k = 3;
+						else
+							k = 4;
+						while(Ghost_Jump>0||Ghost_Z>0){
+							Ghost_MoveAtAngle(angle, k, 0);
+							EZB_Waitframe(this, ghost, vars);
+						}
+					
+						EZB_FaceLink(this, ghost, vars);
+						angle = Angle(CenterX(ghost), CenterY(ghost), CenterLinkX(), CenterLinkY());
+						
+						arr1[0] = 16+(Max(w, h)-1)*8; //Total reach of sword
+						arr1[1] = Max(w, h)*8; //Starting reach of sword
+						arr1[2] = arr1[0]-arr1[1]; //Ending reach of sword
+						for(i=0; i<30; ++i){
+								Game->PlaySound(SFX_EZB_SWORD);
+								Ghost_MoveAtAngle(angle, 0.5+Sin(i*(180/20))*(2), 0);
+								
+								EZB_DrawSword(this, ghost, vars, CenterX(ghost)-8, CenterY(ghost)-8, angle-80*m+i*8*m, angle-60*m+i*6*m, arr1[1]+arr1[2]*Sin(i*(180/20)), ghost->WeaponDamage);
+								EZB_Waitframe(this, ghost, vars);
+						}
+						EZB_FaceLink(this, ghost, vars);
+						EZB_FiringAnim(this, ghost, vars, 1);
+						k = Choose(-1, 1);
+						angle = Angle(CenterX(ghost), CenterY(ghost), CenterLinkX(), CenterLinkY())-75*k;
+						for(i=0; i<7; ++i){
+							EZB_Fire(this, ghost, vars, CenterX(ghost)-8, CenterY(ghost)-8, angle, 250);
+							angle += k*25;
+							EZB_Waitframes(this, ghost, vars, 2);
+						}
+						EZB_Waitframes(this, ghost, vars, 12);
+					}
+				}
+				if(attack==138){ //Gale 3
+					EZB_Waitframes(this, ghost, vars, 30);
+					EZB_FaceLink(this, ghost, vars);
+					angle = Angle(CenterX(ghost), CenterY(ghost), CenterLinkX(), CenterLinkY());
+					
+					EZB_FiringAnim(this, ghost, vars, 1);
+					
+					arr1[0] = 16+(Max(w, h)-1)*8; //Total reach of sword
+					arr1[1] = Max(w, h)*4; //Starting reach of sword
+					arr1[2] = arr1[0]-arr1[1]; //Additional reach of sword
+					
+					for(j=0; j<5; ++j){
+						EZB_FaceLink(this, ghost, vars);
+						EZB_FiringAnim(this, ghost, vars, 1);
+						angle = Angle(CenterX(ghost), CenterY(ghost), CenterLinkX(), CenterLinkY());
+						Game->PlaySound(SFX_EZB_SWORD);
+						if (ghost->HP < 150) {
+							EZB_FaceLink(this, ghost, vars);
+							EZB_FiringAnim(this, ghost, vars, 0);
+							EZB_Fire(this, ghost, vars, CenterX(ghost)-8, CenterY(ghost)-8, Angle(CenterX(ghost), CenterY(ghost), CenterLinkX(), CenterLinkY()), 150);
+						}
+						m = Rand(-20, 20);
+						for(i=0; i<12; ++i){
+							angle = EZB_TurnToAngle(angle, Angle(CenterX(ghost), CenterY(ghost), CenterLinkX(), CenterLinkY()), 1);
+							EZB_FaceAngle(this, ghost, vars, angle);
+					
+							Ghost_MoveAtAngle(angle, 1.5+Sin(i*(180/12))*(2), 0);
+							
+							EZB_DrawSword(this, ghost, vars, CenterX(ghost)-8, CenterY(ghost)-8, angle+m+5*Sin(i*(180/12)), angle+m, arr1[1]+arr1[2]*Sin(i*(180/12)), ghost->WeaponDamage);
+							EZB_Waitframe(this, ghost, vars);
+						}
+					}
+					if (ghost->HP < 200) {
+						if ( Screen->NumNPCs() < EZB_TOTAL_SUMMON_CAP && EZB_NumSummons(summons) < EZB_SUMMON_CAP ) {
+							EZB_FiringAnim(this, ghost, vars, 0);
+							Game->PlaySound(84);
+							for(i=0; i<2; ++i){
+								enem = CreateNPCAt(173, CenterX(ghost)-8+Rand(-4, 4), CenterY(ghost)-8+Rand(-4, 4));
+								EZB_AddSummon(enem, summons);
+							}
+							EZB_Waitframes(this, ghost, vars, 24);
+						}
+					}
+				}
+				
+				if(attack==139){ //Gale 4
+					EZB_Waitframes(this, ghost, vars, 3);
+						EZB_FiringAnim(this, ghost, vars, 1);
+						angle = 0;
+						if ( CenterLinkX() < 128 )
+							angle = 180;
+						for(i=0; i<5; ++i){
+							if ( angle == 0 )
+								EZB_Fire(this, ghost, vars, 0, CenterLinkY()-8, angle, 420);
+							else
+								EZB_Fire(this, ghost, vars, 240, CenterLinkY()-8, angle, 420);
+							EZB_Waitframes(this, ghost, vars, 20);
+						}
+					EZB_FaceLink(this, ghost, vars);
+						EZB_FiringAnim(this, ghost, vars, 1);
+						EZB_FaceLink(this, ghost, vars);
+						angle = Angle(CenterX(ghost), CenterY(ghost), CenterLinkX(), CenterLinkY());
+						Ghost_Data = combo;
+						for(i=0; i<30; ++i){
+							angle = Angle(CenterX(ghost), CenterY(ghost), CenterLinkX(), CenterLinkY());
+							Ghost_MoveAtAngle(angle, 1, 0);
+							EZB_FaceLink(this, ghost, vars);
+							EZB_Waitframe(this, ghost, vars);
+						}
+					if (ghost->HP > 130) {
+						Game->PlaySound(35);
+						EZB_Waitframes(this, ghost, vars, 40);
+						angle = EZB_DirAngle(Ghost_Dir);
+						EZB_FiringAnim(this, ghost, vars, 1);
+						EZB_Waitframes(this, ghost, vars, 10);
+						Game->PlaySound(SFX_EZB_LIGHTNING);
+						Screen->Quake = 30;
+						EZB_RunEffect(3, CenterX(ghost), CenterY(ghost), angle, laserColors[0], laserColors[1], laserColors[2], ghost->WeaponDamage*2);
+						EZB_Waitframes(this, ghost, vars, 40);
+					}
+					else{
+						Game->PlaySound(70);
+						for(i=0; i<4; ++i){
+							angle = Angle(CenterX(ghost), CenterY(ghost), CenterLinkX(), CenterLinkY());
+							Ghost_MoveAtAngle(angle, 1, 0);
+							EZB_FaceLink(this, ghost, vars);
+							EZB_Waitframe(this, ghost, vars);
+							angle = EZB_DirAngle(Ghost_Dir);
+							EZB_FiringAnim(this, ghost, vars, 1);
+							EZB_Waitframes(this, ghost, vars, 40);
+							Game->PlaySound(SFX_EZB_LIGHTNING);
+							Screen->Quake = 20;
+							EZB_RunEffect(3, CenterX(ghost), CenterY(ghost), angle, laserColors[0], laserColors[1], laserColors[2], ghost->WeaponDamage*2);
+						}
+						EZB_Waitframes(this, ghost, vars, 40);
 					}
 				}
 				

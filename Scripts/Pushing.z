@@ -106,7 +106,7 @@ void ShieldSelection(){
 	else				{strcat(name_15, "??????");}
 	if(Link->Item[12]){strcat(name_16, "Black Dragon");}
 	else				{strcat(name_16, "??????");}
-	if(Link->Item[118]){strcat(name_17, "Silver Dragon");}
+	if(Link->Item[118]){strcat(name_17, "White Dragon");}
 	else				{strcat(name_17, "??????");}
 	if(Link->Item[90]){strcat(name_18, "Red Dragon");}
 	else				{strcat(name_18, "??????");}
