@@ -46,7 +46,7 @@ const int NPC_ITEMSET               = 178;
 const int SPRITE_BUSH_CUT           = 54;       
 const int SPRITE_FLOWER_CUT         = 54;       
 const int SPRITE_GRASS_CUT          = 54;
-const int CanDrown                  = 1;     
+const int CanDrown                  = 1;    
 
 bool barriers[511]; // false = blue barriers raised, true = red barriers raised
 // to draw while Scrolling
@@ -1360,11 +1360,14 @@ global script slot2
 			UpdateGhostZH1();
 			PegasusBoots();
 			PushAnimation();
-			ShieldSelection();
 			//LogPrint("Link->Z is %d \n ", Link->Z);
 			//LogPrint("DashCounter is %d \n ", DashCounter);
 			//LogPrint("Link is over a pit? %s \n", ( (MooshPit_OnPit(Link->X, Link->Y, true)) ? "true" : "false"));
 			MooshPit_Update();
+			
+			if(Link->PressEx3){
+				ShieldSelection();
+			}
 			
 			if (Link->HP <= 0 && Link->Item[POTION_ID]) 
 			{
