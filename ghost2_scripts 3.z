@@ -855,6 +855,7 @@ void Barriers_NewScreen()
 							const int ICE_ACCELERATION = 3;
 							const int ICE_DECELERATION = 1;
 							const int ICE_MAXSTEP     = 150;
+							const int ICE_INITSTEP     = 50;
 							
 							//Declare global variables used by Ice Combos.
 							bool isScrolling;
@@ -863,6 +864,7 @@ void Barriers_NewScreen()
 							float Ice_Y;
 							int Ice_XStep;
 							int Ice_YStep;
+							
 							//End declaration
 							
 							//Active Script
@@ -879,8 +881,16 @@ void Barriers_NewScreen()
 								Ice_YStep = 0;
 							}
 							
+							void IceCombos_RecordInput(bool Ice_Input)
+							{
+								Ice_Input[DIR_UP] = Link->InputUp;
+								Ice_Input[DIR_DOWN] = Link->InputDown;
+								Ice_Input[DIR_LEFT] = Link->InputLeft;
+								Ice_Input[DIR_RIGHT] = Link->InputRight;
+							}
+							
 							//Adds Ice Combo functionally to CT_ICECOMBO;
-							void Update_IceCombos(int oldscreen)
+							void Update_IceCombos(int oldscreen, bool Ice_Input)
 							{
 								//Update Variables
 								if(Link->Action != LA_SCROLLING)
@@ -890,11 +900,18 @@ void Barriers_NewScreen()
 										Ice_X = Link->X;
 										Ice_Y = Link->Y;
 										if(isScrolling)
-										isScrolling = false;
+											isScrolling = false;
 										else
 										{
-											Ice_XStep = 0;
-											Ice_YStep = 0;
+											int iX = (Ice_Input[DIR_LEFT]?-1:0) + (Ice_Input[DIR_RIGHT]?1:0);
+											int iY = (Ice_Input[DIR_UP]?-1:0) + (Ice_Input[DIR_DOWN]?1:0);
+											if(iX!=0&&iY!=0)
+											{
+												iX *= 0.7071;
+												iY *= 0.7071;
+											}
+											Ice_XStep = iX * ICE_INITSTEP;
+											Ice_YStep = iY * ICE_INITSTEP;
 										}
 									}
 									onice = OnIce();
@@ -990,8 +1007,15 @@ void Barriers_NewScreen()
 								}
 								else
 								{
-									Ice_XStep = 0;
-									Ice_YStep = 0;
+									int iX = (Ice_Input[DIR_LEFT]?-1:0) + (Ice_Input[DIR_RIGHT]?1:0);
+									int iY = (Ice_Input[DIR_UP]?-1:0) + (Ice_Input[DIR_DOWN]?1:0);
+									if(iX!=0&&iY!=0)
+									{
+										iX *= 0.7071;
+										iY *= 0.7071;
+									}
+									Ice_XStep = iX * ICE_INITSTEP;
+									Ice_YStep = iY * ICE_INITSTEP;
 								}
 							}
 							
@@ -1347,6 +1371,7 @@ global script slot2
 {
 	void run()
 	{
+		bool Ice_Input[4];
 		TraceS("@Running globl");
 		// Initialize variables used to listen on screen changes
 		int curscreen = -1; int lastScreen = Game->GetCurScreen();
@@ -1385,6 +1410,7 @@ global script slot2
 				lastScreen = Game->GetCurScreen();
 				lastMap = Game->GetCurMap();
 			}
+			IceCombos_RecordInput(Ice_Input);
 			Waitdraw();
 			UpdateGhostZH2();
 			// Keep track of screen changes
@@ -1397,7 +1423,7 @@ global script slot2
 			LREx1Ex2ItemSwitch();
 			
 			
-			Update_IceCombos(oldscreen);
+			Update_IceCombos(oldscreen, Ice_Input);
 			oldscreen = Game->GetCurScreen();
 			
 			
