@@ -10,7 +10,7 @@ ffc script delayStartWarp{
 
         
 
-        while(!Link->PressStart)
+        while(!Link->PressStart && !Link->PressA && !Link->PressB)
 
             Waitframe();
 

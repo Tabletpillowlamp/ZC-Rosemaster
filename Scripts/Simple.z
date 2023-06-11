@@ -75,25 +75,25 @@ ffc script MusicSecret
 	}
 }
 
+item script GhostZHClockScript
+{
+	void run(int duration)
+	{
+		if(duration<=0)
+		__ghzhData[__GHI_CLOCK_TIMER]=-1;
+		else
+		__ghzhData[__GHI_CLOCK_TIMER]=duration;
+	}
+}
 
 ffc script ButtonDisabler
 {
-    void run()
-    {
-   
+    void run(int contin)
+	{
         while(true){
-		 	Game->SkipF6 = true;
-            Link->InputStart = false; Link->PressStart = false;
-            Link->InputMap = false; Link->PressMap = false;
-            NoAction();
-            Waitframe();
-        }
-    }
-}
-
-ffc script ButtonDisContinue{
-    void run(){
-        while(true){
+			if(contin==0){
+				Game->SkipF6 = true;
+			}
             Link->InputStart = false; Link->PressStart = false;
             Link->InputMap = false; Link->PressMap = false;
             NoAction();
@@ -259,12 +259,12 @@ void run(int flamesprite, int speed, int damage, int soundeffect){
 
 Link->Action = LA_ATTACKING;
 	Game -> PlaySound (soundeffect);
-	for(int i; i < 8; i++){
+	for(int i; i < 24; i++){
 		lweapon fire = CreateLWeaponAt(LW_FIRE, Link->X, Link->Y);
 		fire->Dir = i;
 		fire->Step = speed * 1.5;
 		fire->Angular = true;
-		fire->Angle = DegtoRad(i*45);
+		fire->Angle = DegtoRad(i*15);
 		fire->UseSprite(flamesprite);
 		fire->Damage = damage;
 	}

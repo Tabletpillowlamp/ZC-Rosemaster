@@ -4031,6 +4031,28 @@ ffc script EZBoss{
 					}
 				}
 				
+				if(attack==140){ //Aquamentus 1
+					if (ghost->HP > 15) {
+						EZB_FaceLink(this, ghost, vars);
+						EZB_FiringAnim(this, ghost, vars, 0);
+						EZB_Fire(this, ghost, vars, CenterX(ghost)-8, CenterY(ghost)-8, Angle(CenterX(ghost), CenterY(ghost), CenterLinkX(), CenterLinkY()), 150);
+						EZB_Waitframes(this, ghost, vars, 24);
+					}
+					else {
+						EZB_FiringAnim(this, ghost, vars, 20);
+						EZB_Waitframes(this, ghost, vars, 20);
+						Game->PlaySound(24);
+						Screen->Quake = 60;
+						EZB_Waitframes(this, ghost, vars, 60);
+						for(i=0; i<8; ++i) {
+							EZB_FaceLink(this, ghost, vars);
+							EZB_FiringAnim(this, ghost, vars, 0);
+							EZB_Fire(this, ghost, vars, CenterX(ghost)-8, CenterY(ghost)-8, Angle(CenterX(ghost), CenterY(ghost), CenterLinkX(), CenterLinkY()), 300);
+							EZB_Waitframes(this, ghost, vars, 2);
+						}
+					}
+				}
+				
 				//new attack here
 				
 				i = 0;
